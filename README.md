@@ -12,6 +12,7 @@ The seller supplies item photos, a short description, known defects, and a targe
 4. Review the proposed title, category, condition, item specifics, description, price, policies, and shipping.
 5. Approve, reject, or request changes.
 6. Publish the approved draft and receive the live eBay URL and listing ID.
+7. On later app launches or listing changes, review one-time alerts for new offers, completed sales, and refunds.
 
 ## Core principles
 
@@ -21,6 +22,7 @@ The seller supplies item photos, a short description, known defects, and a targe
 - **Private by default:** credentials, seller data, item photos, and real listings remain on the seller's computer.
 - **Public-repository safe:** the repository contains only source code, fictional examples, safe configuration templates, and documentation.
 - **Provider-neutral integrations:** eBay, AI-assisted research, and shipping quotes sit behind replaceable adapters.
+- **Actionable, deduplicated notifications:** the app checks once at startup and after listing changes, then alerts only on newly observed offers, sales, or refunds.
 
 ## Shipping scope
 
@@ -34,7 +36,7 @@ Because eBay.it does not provide the same native calculated-shipping support ava
 
 ## Initial scope
 
-The initial release focuses on listing creation, approval, publication, and deliberate listing revisions. Order fulfillment, customer messaging, returns processing, accounting, and autonomous repricing are outside the first release.
+The initial release focuses on listing creation, approval, publication, deliberate listing revisions, and read-only notifications for offers, sales, and refunds. Order fulfillment, customer messaging, returns processing, accounting, autonomous repricing, automatic offer responses, and automatic refunds are outside the first release.
 
 The validated design is documented in [`docs/superpowers/specs/2026-07-17-ebay-listing-copilot-design.md`](docs/superpowers/specs/2026-07-17-ebay-listing-copilot-design.md).
 

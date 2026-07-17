@@ -94,6 +94,10 @@ Deleting a secret from the latest commit is not sufficient once it has entered G
 - Before executing, revalidate authentication, draft version, required fields, policy compatibility, and shipping-quote freshness.
 - Use idempotency records and provider reconciliation to prevent duplicate listings.
 - Do not automatically retry an ambiguous publish, revise, relist, or end operation until eBay state has been checked.
+- Notifications are read-only. Never accept, counter, or decline an offer or issue a refund as a side effect of refreshing activity.
+- Refresh activity once on application startup and once after a successful listing mutation. Do not introduce continuous polling without a separately approved design.
+- Deduplicate activity using stable provider identifiers plus relevant status or revision values. Do not repeatedly alert on an unchanged event.
+- Notification previews must minimize buyer information and must not expose addresses, email addresses, payment details, or provider payloads.
 
 ## 10. Coding standards
 
@@ -157,6 +161,7 @@ Deleting a secret from the latest commit is not sufficient once it has entered G
 - Use deterministic fixtures for provider contracts and research results.
 - Use eBay Sandbox for automated end-to-end publication tests; never use a production listing as an automated test target.
 - Test approval invalidation, duplicate prevention, stale shipping quotes, defect preservation, redaction, token expiration, and ambiguous publish recovery.
+- Test notification deduplication, startup refresh, post-mutation refresh, partial API failure, and buyer-data minimization.
 - Add regression tests for every fixed defect.
 - Keep tests independent, deterministic, and safe to rerun.
 - Do not weaken or delete a failing test merely to make CI pass without explaining and correcting the underlying requirement.
@@ -197,4 +202,3 @@ Before the repository becomes public:
 - Add `SECURITY.md`, a license, contribution guidance, and a private vulnerability-reporting path.
 - Run the complete test and security-check suite from a clean checkout.
 - Require the repository owner to approve the exact content before publication.
-

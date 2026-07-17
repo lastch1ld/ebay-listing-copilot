@@ -17,6 +17,7 @@ The project is intended to become a public GitHub reference repository. All real
 - Preserve and prominently disclose known defects.
 - Research product details and pricing with visible sources and uncertainty labels.
 - Research shipping within Italy and across continental Europe, including non-EU destinations.
+- Surface new offers, completed sales, and refunds through deduplicated, read-only notifications.
 - Bind approval to an immutable draft version so an approved listing cannot change silently before publication.
 - Provide a modular, testable codebase that is safe to publish.
 
@@ -24,6 +25,7 @@ The project is intended to become a public GitHub reference repository. All real
 
 - Autonomous publication without seller approval.
 - Automatic price changes, relisting, or ending of live listings.
+- Automatic offer acceptance, countering, rejection, or refund issuance.
 - Order fulfillment, shipment purchase, tracking upload, customer messaging, returns, or accounting.
 - Bulk multi-seller or marketplace-as-a-service operation.
 - Guaranteed item identification from images alone.
@@ -119,6 +121,28 @@ The application then publishes the offer once, using an idempotent operation rec
 
 The application can import and display its managed drafts and live listings. It may propose revisions to price, quantity, content, policies, or shipping, but material changes follow the same versioned review-and-approval workflow. Relisting and ending a listing also require explicit approval and a clear impact summary.
 
+### 4.8 Activity notifications
+
+The application provides a local notification center for:
+
+- New or materially changed buyer Best Offers and counteroffers
+- Newly completed sales after checkout and cleared payment
+- Newly observed refund activity or refund-status changes
+
+Activity refresh is deliberately trigger-based in the first release:
+
+1. Run once after the application finishes loading and seller authorization is available.
+2. Run once after a successful publish, revise, relist, or end operation.
+3. Do not poll continuously in the background.
+
+The refresh queries eBay for changes since the last successful activity checkpoint. Best Offers are retrieved through the Trading API `GetBestOffers` capability. Completed sales and refund status are read from Fulfillment orders and their payment summaries. The implementation must tolerate API capability or marketplace differences and report a partial refresh rather than hiding successful results.
+
+Each normalized activity record contains a provider event or entity identifier, event type, relevant listing and order identifiers, provider status or revision, provider timestamp, first-seen timestamp, and local read state. A deduplication key combines the stable provider identifier with the status or revision that represents a material change. An unchanged record is not shown as a new alert on every launch.
+
+Notifications show only the minimum seller-relevant information: listing title, event type, amount and currency when applicable, status, time, and a link to the local detail view or eBay. Buyer addresses, email addresses, payment details, and raw provider payloads are excluded from notification previews.
+
+This feature is read-only. Refreshing notifications never accepts, counters, or declines an offer and never issues a refund. Those actions are outside the first release and would require a separate approval-bound design.
+
 ## 5. Shipping design
 
 ### 5.1 Scope
@@ -179,6 +203,7 @@ The application runs locally and binds only to the loopback interface by default
 7. **Approval service** — versions normalized drafts, computes hashes, records approvals, and invalidates stale approvals.
 8. **Local persistence** — stores settings, item records, research evidence, draft versions, approvals, operation logs, and eBay identifiers.
 9. **Background job runner** — executes bounded research, quote collection, image processing, and eBay synchronization with retry rules.
+10. **Activity monitor** — performs trigger-based offer, sale, and refund refreshes; normalizes provider records; advances checkpoints; and creates deduplicated local notifications.
 
 ### 6.2 Dependency boundaries
 
@@ -187,6 +212,7 @@ The application runs locally and binds only to the loopback interface by default
 - Draft generation is testable with fixed evidence and no network access.
 - Publication requires an approval record from the approval service; the web interface cannot bypass this rule.
 - Provider-specific failures remain inside their adapters and surface as normalized actionable errors.
+- Activity refresh is read-only and cannot invoke offer-response or refund-write operations.
 
 ### 6.3 Suggested implementation shape
 
@@ -230,6 +256,8 @@ Recoverable failures enter `ACTION_REQUIRED`; nonrecoverable failures enter `FAI
 - Missing required facts, unresolved defects, stale shipping quotes, or changed drafts block publication.
 - Errors shown to the seller explain what failed, what remains safe, and the next action.
 - Research and quote jobs retain partial successful results and may be resumed.
+- Activity checkpoints advance only after the corresponding provider page or time window has been processed successfully.
+- A partial activity refresh records which event sources failed and preserves successful offer, sale, or refund notifications.
 
 ## 10. Testing strategy
 
@@ -243,6 +271,7 @@ Recoverable failures enter `ACTION_REQUIRED`; nonrecoverable failures enter `FAI
 - Quote normalization and freshness
 - Draft hashing and approval invalidation
 - State-transition rules and redaction
+- Activity deduplication keys, read state, and checkpoint advancement
 
 ### 10.2 Integration tests
 
@@ -251,6 +280,7 @@ Recoverable failures enter `ACTION_REQUIRED`; nonrecoverable failures enter `FAI
 - Research provider with fixed responses and citation records
 - OAuth callback and token-refresh flows without exposing secrets
 - Local persistence and restart recovery
+- Trading `GetBestOffers` and Fulfillment order/refund activity normalization
 
 ### 10.3 End-to-end tests
 
@@ -261,6 +291,9 @@ Recoverable failures enter `ACTION_REQUIRED`; nonrecoverable failures enter `FAI
 - Stale shipping quote blocking publication
 - Non-EU destination showing customs warnings
 - Authentication expiry and recovery
+- Startup activity refresh creating each new offer, sale, or refund alert once
+- Post-listing-change refresh without continuous polling
+- Partial activity-source failure preserving successful notifications
 
 No production listing is used as an automated test target.
 
@@ -290,6 +323,7 @@ The first release is successful when a seller can:
 5. Review one complete summary and approve the exact draft version.
 6. Publish once without duplication and receive the live listing URL and ID.
 7. Propose a later revision and be required to approve it before it affects the live listing.
+8. Launch the app or change a listing and receive each newly observed offer, completed sale, or refund-status change once.
 
 ## 13. Deferred decisions for implementation planning
 
@@ -310,3 +344,5 @@ These decisions do not change the approved user workflow or safety boundaries.
 - [eBay Account API overview](https://developer.ebay.com/api-docs/sell/account/static/overview.html)
 - [eBay shipping rate tables](https://developer.ebay.com/api-docs/user-guides/static/trading-user-guide/shipping-rate-tables.html)
 - [eBay calculated shipping](https://developer.ebay.com/api-docs/user-guides/static/trading-user-guide/shipping-calculated.html)
+- [eBay Trading API `GetBestOffers`](https://developer.ebay.com/devzone/xml/docs/reference/ebay/GetBestOffers.html)
+- [eBay Fulfillment API](https://developer.ebay.com/develop/api/sell/fulfillment_api)
