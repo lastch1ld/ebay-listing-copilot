@@ -1,0 +1,40 @@
+# eBay Listing Copilot
+
+eBay Listing Copilot is a local, approval-driven web application for creating and managing a seller's own eBay listings with minimal input.
+
+The seller supplies item photos, a short description, known defects, and a target price. The application researches the item and comparable listings, prepares the required listing information, researches domestic and continental-European shipping, and creates an unpublished eBay draft. It presents a concise evidence-backed summary and publishes only after the seller explicitly approves that exact draft.
+
+## Intended workflow
+
+1. Add item photos, a short description, known defects, and a target price.
+2. Confirm package weight, dimensions, and the saved ship-from location.
+3. Let the application research the item, comparable listings, and shipping options.
+4. Review the proposed title, category, condition, item specifics, description, price, policies, and shipping.
+5. Approve, reject, or request changes.
+6. Publish the approved draft and receive the live eBay URL and listing ID.
+
+## Core principles
+
+- **Human approval before publication:** no listing is published, materially revised, relisted, or ended without explicit approval.
+- **Evidence over invention:** researched claims retain their sources; uncertain values are clearly marked and must not be presented as facts.
+- **Honest condition reporting:** known defects are preserved throughout the workflow and cannot be silently removed.
+- **Private by default:** credentials, seller data, item photos, and real listings remain on the seller's computer.
+- **Public-repository safe:** the repository contains only source code, fictional examples, safe configuration templates, and documentation.
+- **Provider-neutral integrations:** eBay, AI-assisted research, and shipping quotes sit behind replaceable adapters.
+
+## Shipping scope
+
+The first version covers:
+
+- Domestic shipping within Italy
+- EU destinations in continental Europe
+- Non-EU continental-European destinations, handled separately for customs and pricing
+
+Because eBay.it does not provide the same native calculated-shipping support available in certain other marketplaces, the application obtains or researches quotes externally and converts the approved result into eBay-compatible flat shipping costs, fulfillment policies, or shipping-rate tables.
+
+## Initial scope
+
+The initial release focuses on listing creation, approval, publication, and deliberate listing revisions. Order fulfillment, customer messaging, returns processing, accounting, and autonomous repricing are outside the first release.
+
+The validated design is documented in [`docs/superpowers/specs/2026-07-17-ebay-listing-copilot-design.md`](docs/superpowers/specs/2026-07-17-ebay-listing-copilot-design.md).
+
