@@ -1,7 +1,7 @@
 # eBay Listing Copilot — Design Specification
 
 **Date:** 2026-07-17  
-**Status:** Approved concept; implementation plan pending document review  
+**Status:** Approved; implementation plan created
 **Intended license:** MIT  
 
 ## 1. Purpose
