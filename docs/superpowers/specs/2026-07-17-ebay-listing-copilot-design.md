@@ -269,6 +269,7 @@ No production listing is used as an automated test target.
 The repository will include:
 
 - A concise README and architecture documentation
+- Mandatory engineering and credential rules in `AGENTS.md`
 - Safe setup instructions and sample configuration
 - Fictional sample data and deterministic test fixtures
 - Automated tests and formatting checks

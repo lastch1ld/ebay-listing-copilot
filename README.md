@@ -38,3 +38,4 @@ The initial release focuses on listing creation, approval, publication, and deli
 
 The validated design is documented in [`docs/superpowers/specs/2026-07-17-ebay-listing-copilot-design.md`](docs/superpowers/specs/2026-07-17-ebay-listing-copilot-design.md).
 
+Mandatory credential-handling, security, coding, testing, and public-release rules are defined in [`AGENTS.md`](AGENTS.md).
