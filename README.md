@@ -23,6 +23,7 @@ The seller supplies item photos, a short description, known defects, and a targe
 - **Public-repository safe:** the repository contains only source code, fictional examples, safe configuration templates, and documentation.
 - **Provider-neutral integrations:** eBay, AI-assisted research, and shipping quotes sit behind replaceable adapters.
 - **Actionable, deduplicated notifications:** the app checks once at startup and after listing changes, then alerts only on newly observed offers, sales, or refunds.
+- **Tests enforced in GitHub:** the repository's pipeline runs formatting, linting, type checking, offline tests, and security checks before changes are accepted.
 
 ## Shipping scope
 

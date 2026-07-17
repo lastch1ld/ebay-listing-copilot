@@ -306,11 +306,21 @@ The repository will include:
 - Safe setup instructions and sample configuration
 - Fictional sample data and deterministic test fixtures
 - Automated tests and formatting checks
+- A GitHub Actions pipeline that enforces formatting, linting, strict type checking, offline tests, build verification, secret scanning, and dependency/security checks
 - A security and privacy section
 - A contribution guide and intended MIT license
 - Secret scanning and dependency checks in continuous integration
 
 Before publication, the repository must pass a dedicated sensitive-data review covering Git history, tracked files, examples, screenshots, logs, and generated artifacts.
+
+### 11.1 Continuous integration
+
+The execution plan must include two GitHub Actions workflows:
+
+1. **Required credential-free CI** — runs on every pull request and push to the default branch. It installs from the committed lockfile and runs formatting verification, linting, strict type checking, unit tests, deterministic provider-contract and integration tests, build verification, secret scanning, and dependency/security checks. Any required failure blocks merge.
+2. **Protected Sandbox end-to-end tests** — runs only through manual dispatch in a protected GitHub environment after approval. It uses dedicated eBay Sandbox credentials and other non-production test credentials. It must never run for untrusted fork code, expose secrets in logs or artifacts, or contact Production endpoints.
+
+Workflow permissions default to read-only. Third-party actions are pinned to full commit SHAs. Uploaded artifacts are allowlisted and must not contain private seller data, photos, provider payloads, tokens, databases, or logs with personal information. Once public, branch protection requires the credential-free workflow before merge.
 
 ## 12. Success criteria
 
@@ -335,6 +345,7 @@ The execution plan will resolve these choices using current official documentati
 - eBay Inventory versus traditional listing API strategy for creation and continued Seller Hub compatibility
 - Packaging and background-job libraries
 - Operating-system secret storage implementation
+- Exact CI commands, action versions, and protected-environment configuration after the implementation stack is selected
 
 These decisions do not change the approved user workflow or safety boundaries.
 

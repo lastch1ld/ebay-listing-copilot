@@ -189,7 +189,23 @@ For every behavior change:
 
 Security-sensitive changes involving OAuth, secret storage, publishing, approval, redaction, or GitHub release require an additional focused review.
 
-## 14. Public-release checklist
+## 14. Continuous-integration pipeline
+
+- Use GitHub Actions as the public repository's continuous-integration platform.
+- Run the safe, credential-free pipeline on every pull request and push to the default branch.
+- The required pipeline sequence is: dependency installation from the lockfile, formatting verification, linting, strict type checking, unit tests, deterministic integration tests, build verification, secret scanning, and dependency/security scanning.
+- Fail the workflow on any failed required check. Do not use `continue-on-error` for required quality or security gates.
+- Upload only artifacts known not to contain credentials, personal data, item photos, listings, provider payloads, or local databases.
+- Use least-privilege workflow permissions. Default the repository token to read-only and grant narrow write permissions only to jobs that demonstrably need them.
+- Pin third-party actions to full commit SHAs and document update procedures.
+- Do not expose repository secrets to workflows triggered from forks or untrusted pull requests.
+- Keep eBay Sandbox and other credentialed end-to-end tests in a separate, manually dispatched, protected workflow environment.
+- Credentialed jobs must use dedicated Sandbox credentials, require approval, redact output, and never target Production endpoints.
+- Add concurrency controls so a newer run can cancel an obsolete run for the same branch when safe.
+- Cache dependencies only by lockfile hash and never cache secret stores, `.env` files, databases, uploads, or provider responses.
+- Branch protection should require the credential-free pipeline before merge once the repository is public.
+
+## 15. Public-release checklist
 
 Before the repository becomes public:
 
@@ -201,4 +217,5 @@ Before the repository becomes public:
 - Confirm the README documents required accounts, external costs, permissions, limitations, and the approval model.
 - Add `SECURITY.md`, a license, contribution guidance, and a private vulnerability-reporting path.
 - Run the complete test and security-check suite from a clean checkout.
+- Confirm the required GitHub Actions workflow passes and the protected Sandbox workflow cannot expose credentials to untrusted code.
 - Require the repository owner to approve the exact content before publication.
