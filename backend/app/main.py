@@ -3,14 +3,19 @@ from pathlib import Path
 from fastapi import FastAPI
 
 from app.api.routes.auth import router as auth_router
+from app.api.routes.drafts import router as drafts_router
 from app.api.routes.health import router as health_router
 from app.api.routes.items import router as items_router
 from app.api.routes.research import router as research_router
+from app.application.approval import ApprovalService
 from app.application.intake import IntakeService
 from app.application.jobs import JobRunner
+from app.application.publishing import PublishingService
 from app.application.research import ResearchClient, ResearchService
 from app.config import load_settings
+from app.integrations.ebay.inventory import EbayInventoryClient
 from app.integrations.ebay.oauth import EbayOAuth, EbayTokenStore
+from app.integrations.ebay.rest import EbayRestClient
 from app.integrations.openai.research import OpenAIResearchClient, UnconfiguredResearchClient
 from app.persistence.database import create_session_factory
 from app.security.secrets import SecretStore
@@ -28,6 +33,7 @@ app.include_router(health_router)
 app.include_router(items_router)
 app.include_router(research_router)
 app.include_router(auth_router)
+app.include_router(drafts_router)
 
 app.state.session_factory = create_session_factory(settings.database_url)
 app.state.intake_service = IntakeService(
@@ -57,4 +63,19 @@ app.state.ebay_oauth = EbayOAuth(
     environment=settings.ebay_environment,
     scopes=_EBAY_SCOPES,
     token_store=EbayTokenStore(SecretStore(service="ebay-listing-copilot")),
+)
+
+
+def _ebay_access_token() -> str:
+    oauth: EbayOAuth = app.state.ebay_oauth
+    return oauth.refresh().access_token
+
+
+app.state.approval_service = ApprovalService(session_factory=app.state.session_factory)
+_ebay_rest_client = EbayRestClient(
+    environment=settings.ebay_environment, access_token_provider=_ebay_access_token
+)
+app.state.publishing_service = PublishingService(
+    session_factory=app.state.session_factory,
+    ebay_client=EbayInventoryClient(_ebay_rest_client),
 )

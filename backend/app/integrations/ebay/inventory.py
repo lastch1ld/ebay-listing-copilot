@@ -26,6 +26,17 @@ class EbayDraftRef:
     fee_estimate: FeeEstimate | None
 
 
+@dataclass(frozen=True)
+class EbayOfferStatus:
+    offer_id: str
+    listing_id: str | None
+    status: str
+
+
+class OfferPublishAmbiguousError(RuntimeError):
+    pass
+
+
 _SELLER_HUB_ACKNOWLEDGEMENT = (
     "Listings created through the Inventory API must be revised through this "
     "application/API and cannot currently be edited in Seller Hub."
@@ -54,6 +65,35 @@ class EbayInventoryClient:
             offer_id=offer_id,
             warnings=warnings,
             fee_estimate=fee_estimate,
+        )
+
+    def publish_offer(self, offer_id: str) -> str:
+        try:
+            payload = self._rest_client.post(f"/sell/inventory/v1/offer/{offer_id}/publish", {})
+        except httpx.TimeoutException as error:
+            raise OfferPublishAmbiguousError(
+                f"publish for offer {offer_id} timed out; reconcile with get_offer before retry"
+            ) from error
+        listing_id = payload.get("listingId")
+        if not isinstance(listing_id, str):
+            raise OfferPublishAmbiguousError(
+                f"publish for offer {offer_id} did not return a listingId; "
+                "reconcile with get_offer before retry"
+            )
+        return listing_id
+
+    def get_offer(self, offer_id: str) -> EbayOfferStatus:
+        payload = self._rest_client.get(f"/sell/inventory/v1/offer/{offer_id}")
+        listing = payload.get("listing")
+        listing_id = None
+        if isinstance(listing, dict):
+            raw_listing_id = listing.get("listingId")
+            listing_id = raw_listing_id if isinstance(raw_listing_id, str) else None
+        status = payload.get("status")
+        return EbayOfferStatus(
+            offer_id=offer_id,
+            listing_id=listing_id,
+            status=str(status) if status is not None else "UNKNOWN",
         )
 
     def _create_or_replace_inventory_item(

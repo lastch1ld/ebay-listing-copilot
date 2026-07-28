@@ -38,6 +38,15 @@ class OperationRepository:
                 select(OperationModel).where(OperationModel.operation_key == operation_key)
             )
 
+    def complete(self, operation_id: str, result_json: str) -> None:
+        with self._session_factory() as session:
+            operation = session.get(OperationModel, operation_id)
+            if operation is None:
+                raise LookupError(f"operation not found: {operation_id}")
+            operation.status = "COMPLETED"
+            operation.result_json = result_json
+            session.commit()
+
 
 class ItemRepository:
     def __init__(self, session_factory: SessionFactory) -> None:
