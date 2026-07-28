@@ -1,2 +1,35 @@
 .worktrees/
 .superpowers/
+
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+
+# Local runtime data (never commit real seller data)
+backend/data/
+backend/*.sqlite3
+backend/uploads/
+*.db
+
+# Python
+backend/.venv/
+backend/**/__pycache__/
+backend/.pytest_cache/
+backend/.mypy_cache/
+backend/.ruff_cache/
+*.egg-info/
+
+# Node / frontend
+frontend/node_modules/
+frontend/dist/
+frontend/coverage/
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
