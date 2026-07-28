@@ -2,6 +2,7 @@ from pathlib import Path
 
 from fastapi import FastAPI
 
+from app.api.routes.auth import router as auth_router
 from app.api.routes.health import router as health_router
 from app.api.routes.items import router as items_router
 from app.api.routes.research import router as research_router
@@ -9,8 +10,16 @@ from app.application.intake import IntakeService
 from app.application.jobs import JobRunner
 from app.application.research import ResearchClient, ResearchService
 from app.config import load_settings
+from app.integrations.ebay.oauth import EbayOAuth, EbayTokenStore
 from app.integrations.openai.research import OpenAIResearchClient, UnconfiguredResearchClient
 from app.persistence.database import create_session_factory
+from app.security.secrets import SecretStore
+
+_EBAY_SCOPES = (
+    "https://api.ebay.com/oauth/api_scope/sell.inventory",
+    "https://api.ebay.com/oauth/api_scope/sell.account",
+    "https://api.ebay.com/oauth/api_scope/sell.fulfillment",
+)
 
 settings = load_settings()
 
@@ -18,6 +27,7 @@ app = FastAPI(title="eBay Listing Copilot")
 app.include_router(health_router)
 app.include_router(items_router)
 app.include_router(research_router)
+app.include_router(auth_router)
 
 app.state.session_factory = create_session_factory(settings.database_url)
 app.state.intake_service = IntakeService(
@@ -38,4 +48,13 @@ else:
 app.state.research_service = ResearchService(
     client=research_client,
     session_factory=app.state.session_factory,
+)
+
+app.state.ebay_oauth = EbayOAuth(
+    client_id=settings.ebay_client_id,
+    client_secret=settings.ebay_client_secret.get_secret_value(),
+    redirect_uri=settings.ebay_redirect_uri,
+    environment=settings.ebay_environment,
+    scopes=_EBAY_SCOPES,
+    token_store=EbayTokenStore(SecretStore(service="ebay-listing-copilot")),
 )
