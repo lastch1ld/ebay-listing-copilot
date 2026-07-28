@@ -47,6 +47,7 @@ The initial release focuses on listing creation, approval, publication, delibera
 - [Privacy and safety model](docs/privacy.md) — approval hashing, idempotent publish, notification/tracking scope, data retention and deletion.
 - [Security policy](SECURITY.md) — supported versions and how to report a vulnerability privately.
 - [Contributing](CONTRIBUTING.md) — workflow and required checks for changes.
+- [Deploying to Hetzner](docs/deploy.md) — Docker/Caddy deployment sharing a server with another app.
 
 The validated design is documented in [`docs/superpowers/specs/2026-07-17-ebay-listing-copilot-design.md`](docs/superpowers/specs/2026-07-17-ebay-listing-copilot-design.md).
 

@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 
 from app.api.routes.activity import router as activity_router
 from app.api.routes.auth import router as auth_router
@@ -138,3 +139,9 @@ app.state.tracking_service = TrackingService(
     session_factory=app.state.session_factory,
     provider=tracking_provider,
 )
+
+# Serves the built frontend (frontend/dist) when present, e.g. in the deployed
+# container image. Mounted last so it never shadows the /api/* routes above.
+_frontend_dist = Path(__file__).resolve().parents[2] / "frontend" / "dist"
+if _frontend_dist.is_dir():
+    app.mount("/", StaticFiles(directory=str(_frontend_dist), html=True), name="frontend")

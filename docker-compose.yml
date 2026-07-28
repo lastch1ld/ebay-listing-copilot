@@ -1,0 +1,22 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ebay-listing-copilot-app
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - ./backend/data:/app/backend/data
+    # No host ports published at all. This server already runs a shared
+    # Caddy instance (for the tourism-site generator) that owns host ports
+    # 80/443. That Caddy reaches this container by name over the shared
+    # `edge` Docker network below instead of via a host port - see
+    # docs/deploy.md for why (a host-loopback-bound port is not reachable
+    # from a sibling container's bridge network).
+    networks:
+      - edge
+
+networks:
+  edge:
+    external: true

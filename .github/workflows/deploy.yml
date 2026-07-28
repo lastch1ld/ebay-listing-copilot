@@ -1,0 +1,56 @@
+name: Deploy to Hetzner
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "backend/**"
+      - "frontend/**"
+      - "Dockerfile"
+      - "docker-compose.yml"
+      - "Caddyfile"
+      - ".github/workflows/deploy.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-hetzner
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Pull and rebuild on the server
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Deploy over SSH
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
+            "$DEPLOY_USER@$DEPLOY_HOST"
+
+      - name: Health check
+        env:
+          DEPLOY_HEALTHCHECK_URL: ${{ secrets.DEPLOY_HEALTHCHECK_URL }}
+        run: |
+          set -euo pipefail
+          for _ in $(seq 1 10); do
+            if curl --fail --silent --show-error "$DEPLOY_HEALTHCHECK_URL" > /dev/null; then
+              echo "Health check passed."
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "Health check failed after retries." >&2
+          exit 1

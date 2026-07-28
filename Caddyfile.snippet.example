@@ -1,0 +1,46 @@
+# This is NOT consumed by this repo's docker-compose.yml - this app does not
+# run its own Caddy or publish any host port, since the server already has a
+# shared Caddy instance (from the tourism-site generator) holding host ports
+# 80/443. Two Caddy instances (or any two processes) cannot both bind 80/443
+# on the same host, so this app joins that Caddy's reverse proxy instead of
+# running its own.
+#
+# Setup (once):
+#   1. docker network create edge   # if it doesn't already exist
+#   2. Add this app's project to that network: it already declares
+#      `networks: { edge: { external: true } }` in its docker-compose.yml.
+#   3. Add the SAME network to the shared Caddy's docker-compose.yml
+#      (the tourism generator's), e.g. under its `caddy` service:
+#        networks:
+#          - default   # whatever it already uses
+#          - edge
+#      and at the top level:
+#        networks:
+#          edge:
+#            external: true
+#   4. Append the block below to that EXISTING Caddyfile, then reload it,
+#      e.g. `docker compose exec caddy caddy reload --config /etc/caddy/Caddyfile`
+#      from wherever that shared Caddy's compose project lives.
+#
+# Replace the domain below - it needs its own A record pointing at this
+# server. `ebay-listing-copilot-app` is this app's container_name and is
+# reachable by that name from any container on the shared `edge` network -
+# no host port or IP needed.
+
+listing-copilot.example.com {
+	# /api/health stays open (no sensitive data) so uptime/deploy checks work
+	# without credentials. Everything else - including the rest of /api/* -
+	# requires this password: the app has no login of its own.
+	@health path /api/health
+	handle @health {
+		reverse_proxy ebay-listing-copilot-app:8000
+	}
+
+	# Generate a hash with: docker run --rm caddy:2 caddy hash-password
+	# then replace both the username and the hash below.
+	basicauth {
+		seller $2a$14$REPLACE_WITH_A_REAL_BCRYPT_HASH_FROM_caddy_hash-password
+	}
+
+	reverse_proxy ebay-listing-copilot-app:8000
+}
