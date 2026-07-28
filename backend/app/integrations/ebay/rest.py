@@ -45,6 +45,30 @@ class EbayRestClient:
         result: dict[str, object] = response.json()
         return result
 
+    def put(self, path: str, json_body: dict[str, object]) -> dict[str, object]:
+        response = self._http_client.put(
+            f"{self._base_url}{path}",
+            json=json_body,
+            headers=self._headers(),
+        )
+        response.raise_for_status()
+        if not response.content:
+            return {}
+        result: dict[str, object] = response.json()
+        return result
+
+    def upload_binary(
+        self, path: str, filename: str, content_type: str, content: bytes
+    ) -> dict[str, object]:
+        response = self._http_client.post(
+            f"{self._base_url}{path}",
+            files={"file": (filename, content, content_type)},
+            headers={"Authorization": f"Bearer {self._access_token_provider()}"},
+        )
+        response.raise_for_status()
+        result: dict[str, object] = response.json()
+        return result
+
     def _headers(self) -> dict[str, str]:
         return {
             "Authorization": f"Bearer {self._access_token_provider()}",
