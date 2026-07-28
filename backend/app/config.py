@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     ebay_client_secret: SecretStr = Field(default=SecretStr(""))
     ebay_redirect_uri: str = "http://127.0.0.1:8000/api/auth/ebay/callback"
     openai_api_key: SecretStr = Field(default=SecretStr(""))
+    openai_model: str = ""
     database_url: str = "sqlite:///./data/app.db"
 
 

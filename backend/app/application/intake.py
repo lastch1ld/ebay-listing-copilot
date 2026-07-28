@@ -78,6 +78,7 @@ class IntakeService:
         item = ItemModel(
             state=ItemState.INTAKE,
             description=description,
+            defects=defects,
             target_price_currency=target_price.currency,
             target_price_value=str(target_price.value),
         )

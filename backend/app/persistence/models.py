@@ -1,8 +1,11 @@
 import uuid
 from datetime import UTC, datetime
+from typing import Any
 
-from sqlalchemy import ForeignKey, UniqueConstraint
+from sqlalchemy import DateTime, ForeignKey, UniqueConstraint
+from sqlalchemy.engine import Dialect
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.types import TypeDecorator
 
 
 def _uuid() -> str:
@@ -13,8 +16,34 @@ def _utcnow() -> datetime:
     return datetime.now(UTC)
 
 
+class UTCDateTime(TypeDecorator[datetime]):
+    """Stores timestamps as naive UTC and always returns UTC-aware datetimes.
+
+    SQLite's DATETIME storage does not retain timezone offsets, so timezone
+    awareness has to be enforced at the application boundary instead.
+    """
+
+    impl = DateTime
+    cache_ok = True
+
+    def process_bind_param(self, value: datetime | None, dialect: Dialect) -> Any:
+        if value is None:
+            return None
+        if value.tzinfo is None:
+            raise ValueError("naive datetime is not allowed; provide a timezone-aware value")
+        return value.astimezone(UTC).replace(tzinfo=None)
+
+    def process_result_value(self, value: Any, dialect: Dialect) -> datetime | None:
+        if value is None:
+            return None
+        result: datetime = value.replace(tzinfo=UTC)
+        return result
+
+
 class Base(DeclarativeBase):
-    pass
+    type_annotation_map = {  # noqa: RUF012
+        datetime: UTCDateTime,
+    }
 
 
 class ItemModel(Base):
@@ -23,6 +52,7 @@ class ItemModel(Base):
     id: Mapped[str] = mapped_column(primary_key=True, default=_uuid)
     state: Mapped[str] = mapped_column(nullable=False)
     description: Mapped[str] = mapped_column(nullable=False)
+    defects: Mapped[str] = mapped_column(nullable=False)
     target_price_currency: Mapped[str] = mapped_column(nullable=False)
     target_price_value: Mapped[str] = mapped_column(nullable=False)
     ship_from_country: Mapped[str | None] = mapped_column(nullable=True)
