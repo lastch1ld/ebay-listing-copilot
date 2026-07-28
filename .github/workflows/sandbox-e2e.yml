@@ -1,0 +1,45 @@
+name: Sandbox E2E (manual, protected)
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ebay-sandbox
+  cancel-in-progress: false
+
+jobs:
+  sandbox-publish:
+    name: Publish and withdraw one fictional Sandbox listing
+    runs-on: ubuntu-latest
+    # Requires manual approval via the protected `ebay-sandbox` GitHub environment.
+    # Never runs for forked-repository pull requests, since workflow_dispatch
+    # cannot be triggered from a fork's pull request context.
+    environment: ebay-sandbox
+    env:
+      RUN_EBAY_SANDBOX_E2E: "1"
+      EBAY_SANDBOX_CLIENT_ID: ${{ secrets.EBAY_SANDBOX_CLIENT_ID }}
+      EBAY_SANDBOX_CLIENT_SECRET: ${{ secrets.EBAY_SANDBOX_CLIENT_SECRET }}
+      EBAY_SANDBOX_REFRESH_TOKEN: ${{ secrets.EBAY_SANDBOX_REFRESH_TOKEN }}
+      EBAY_SANDBOX_PAYMENT_POLICY_ID: ${{ secrets.EBAY_SANDBOX_PAYMENT_POLICY_ID }}
+      EBAY_SANDBOX_RETURN_POLICY_ID: ${{ secrets.EBAY_SANDBOX_RETURN_POLICY_ID }}
+      EBAY_SANDBOX_FULFILLMENT_POLICY_ID: ${{ secrets.EBAY_SANDBOX_FULFILLMENT_POLICY_ID }}
+      EBAY_SANDBOX_MERCHANT_LOCATION_KEY: ${{ secrets.EBAY_SANDBOX_MERCHANT_LOCATION_KEY }}
+      RECORDED_REQUESTS_FILE: /tmp/sandbox-e2e-requests.log
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with:
+          python-version: "3.12"
+      - name: Install backend dependencies
+        working-directory: backend
+        run: python -m pip install --editable ".[dev]"
+      - name: Guard - no Production calls before the test
+        run: python scripts/verify_no_production_calls.py "$RECORDED_REQUESTS_FILE"
+      - name: Run the Sandbox smoke test
+        working-directory: backend
+        run: python -m pytest tests/e2e/test_sandbox_publish.py -m sandbox -q
+      - name: Guard - no Production calls after the test
+        run: python scripts/verify_no_production_calls.py "$RECORDED_REQUESTS_FILE"

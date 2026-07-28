@@ -22,6 +22,27 @@ async function request<T>(path: string, init?: RequestInit, signal?: AbortSignal
   return (await response.json()) as T;
 }
 
+export function createItem(
+  params: {
+    description: string;
+    defects: string;
+    targetPriceCurrency: string;
+    targetPriceValue: string;
+    photos: File[];
+  },
+  signal?: AbortSignal,
+): Promise<{ item_id: string }> {
+  const body = new FormData();
+  body.set("description", params.description);
+  body.set("defects", params.defects);
+  body.set("target_price_currency", params.targetPriceCurrency);
+  body.set("target_price_value", params.targetPriceValue);
+  for (const photo of params.photos) {
+    body.append("photos", photo);
+  }
+  return request("/api/items", { method: "POST", body }, signal);
+}
+
 export function listTracking(signal?: AbortSignal): Promise<TrackingRecordDTO[]> {
   return request<TrackingRecordDTO[]>("/api/tracking", undefined, signal);
 }

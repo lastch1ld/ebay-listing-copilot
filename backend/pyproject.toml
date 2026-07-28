@@ -28,6 +28,9 @@ dev = [
 pythonpath = ["."]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+markers = [
+    "sandbox: requires real eBay Sandbox credentials; excluded from the credential-free CI run",
+]
 
 [tool.ruff]
 line-length = 100

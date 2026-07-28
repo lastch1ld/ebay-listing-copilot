@@ -1,21 +1,49 @@
 import { useEffect, useState } from "react";
 
-import { addTracking, listTracking, refreshTracking } from "../api/client";
+import { addTracking, createItem, listTracking, refreshTracking } from "../api/client";
 import type { TrackingRecordDTO } from "../api/types";
 import { NotificationCenter } from "../features/activity/NotificationCenter";
+import { ItemIntakeForm } from "../features/intake/ItemIntakeForm";
 import { ListingDashboard } from "../features/listings/ListingDashboard";
 import { DraftReview } from "../features/review/DraftReview";
 import { TrackingList } from "../features/tracking/TrackingList";
 
-const ROUTES = ["review", "listings", "activity", "tracking"] as const;
+const ROUTES = ["intake", "review", "listings", "activity", "tracking"] as const;
 type Route = (typeof ROUTES)[number];
 
 const ROUTE_LABELS: Record<Route, string> = {
+  intake: "New item",
   review: "Review",
   listings: "Listings",
   activity: "Activity",
   tracking: "Tracking",
 };
+
+function IntakeContainer() {
+  const [confirmation, setConfirmation] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  return (
+    <>
+      <ItemIntakeForm
+        onSubmit={(submission) => {
+          setError(null);
+          createItem({
+            description: submission.description,
+            defects: submission.defects,
+            targetPriceCurrency: "EUR",
+            targetPriceValue: submission.targetPriceValue,
+            photos: submission.photos,
+          })
+            .then((result) => setConfirmation(result.item_id))
+            .catch(() => setError("Could not create the item. Please try again."));
+        }}
+      />
+      {confirmation && <p role="status">Item created: {confirmation}</p>}
+      {error && <p role="alert">{error}</p>}
+    </>
+  );
+}
 
 function TrackingContainer() {
   const [records, setRecords] = useState<TrackingRecordDTO[]>([]);
@@ -44,7 +72,7 @@ function TrackingContainer() {
 }
 
 export function AppRouter() {
-  const [route, setRoute] = useState<Route>("listings");
+  const [route, setRoute] = useState<Route>("intake");
 
   return (
     <div>
@@ -61,6 +89,7 @@ export function AppRouter() {
         ))}
       </nav>
       <main>
+        {route === "intake" && <IntakeContainer />}
         {route === "review" && <DraftReview draft={null} />}
         {route === "listings" && <ListingDashboard />}
         {route === "activity" && <NotificationCenter />}

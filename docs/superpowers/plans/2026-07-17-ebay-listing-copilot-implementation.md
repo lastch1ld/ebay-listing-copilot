@@ -845,10 +845,21 @@ git commit -m "feat: add listing review and activity interface"
 
 - [ ] **Step 1: Add mocked browser E2E coverage**
 
-Test intake → research evidence → confirmed shipping → eBay draft → approval → publish result → notification refresh. Add a second test that edits price after approval and confirms publication is blocked until reapproval. Add a third test that adds an outbound tracking number linked to an item and a fourth that adds an inbound tracking number with no item link, then confirms both statuses appear after a simulated login refresh.
+Note: Task 13 delivered the review/listings/activity/tracking screens as
+components wired individually (a dumb `DraftReview` fed by props, a
+`TrackingContainer` fetching `/api/tracking`), not a single connected
+per-item pipeline UI (intake → research trigger → shipping confirmation →
+draft → approve → publish) driven by real navigation between those steps.
+Building that orchestration is a larger frontend feature than Task 13's
+component-by-component scope covered, so the full "intake → ... → publish"
+browser E2E described here is deferred until that pipeline UI exists.
+Instead, this step covers real, currently-wired flows end-to-end in a
+browser: submitting the intake form, and adding an outbound (linked to an
+item) and an inbound (no item link) tracking number, then confirming a
+simulated login refresh updates both records' status.
 
 Run: `cd frontend && npx playwright test tests/e2e/listing-flow.spec.ts`  
-Expected: PASS using mocked backend/provider fixtures.
+Expected: PASS using mocked backend responses (`page.route`).
 
 - [ ] **Step 2: Add Sandbox publication smoke test**
 
