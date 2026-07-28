@@ -3,12 +3,19 @@ from collections.abc import Callable
 
 from sqlalchemy import Engine, create_engine, event
 from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.pool import StaticPool
 
 SessionFactory = Callable[[], Session]
 
 
 def create_engine_for(url: str) -> Engine:
-    engine = create_engine(url, future=True)
+    is_sqlite_memory = url in ("sqlite:///:memory:", "sqlite://")
+    engine = create_engine(
+        url,
+        future=True,
+        connect_args={"check_same_thread": False} if is_sqlite_memory else {},
+        poolclass=StaticPool if is_sqlite_memory else None,
+    )
     if url.startswith("sqlite"):
 
         @event.listens_for(engine, "connect")

@@ -25,8 +25,8 @@ class ItemModel(Base):
     description: Mapped[str] = mapped_column(nullable=False)
     target_price_currency: Mapped[str] = mapped_column(nullable=False)
     target_price_value: Mapped[str] = mapped_column(nullable=False)
-    ship_from_country: Mapped[str] = mapped_column(nullable=False)
-    ship_from_postcode: Mapped[str] = mapped_column(nullable=False)
+    ship_from_country: Mapped[str | None] = mapped_column(nullable=True)
+    ship_from_postcode: Mapped[str | None] = mapped_column(nullable=True)
     created_at: Mapped[datetime] = mapped_column(nullable=False, default=_utcnow)
     updated_at: Mapped[datetime] = mapped_column(nullable=False, default=_utcnow, onupdate=_utcnow)
 
