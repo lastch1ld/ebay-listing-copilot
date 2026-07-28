@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
@@ -5,6 +7,7 @@ from app.persistence.database import SessionFactory
 from app.persistence.models import (
     ActivityEventModel,
     ApprovalModel,
+    CheckpointModel,
     DraftVersionModel,
     ItemModel,
     OperationModel,
@@ -116,3 +119,24 @@ class ActivityRepository:
                 return None
             session.refresh(event)
             return event
+
+
+class CheckpointRepository:
+    def __init__(self, session_factory: SessionFactory) -> None:
+        self._session_factory = session_factory
+
+    def get(self, source_name: str) -> datetime | None:
+        with self._session_factory() as session:
+            checkpoint = session.get(CheckpointModel, source_name)
+            return checkpoint.last_processed_at if checkpoint else None
+
+    def advance(self, source_name: str, processed_at: datetime) -> None:
+        with self._session_factory() as session:
+            checkpoint = session.get(CheckpointModel, source_name)
+            if checkpoint is None:
+                session.add(
+                    CheckpointModel(source_name=source_name, last_processed_at=processed_at)
+                )
+            else:
+                checkpoint.last_processed_at = processed_at
+            session.commit()

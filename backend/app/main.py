@@ -1,21 +1,27 @@
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
 
+from app.api.routes.activity import router as activity_router
 from app.api.routes.auth import router as auth_router
 from app.api.routes.drafts import router as drafts_router
 from app.api.routes.health import router as health_router
 from app.api.routes.items import router as items_router
 from app.api.routes.research import router as research_router
+from app.application.activity import ActivityService, RefreshTrigger
 from app.application.approval import ApprovalService
 from app.application.intake import IntakeService
 from app.application.jobs import JobRunner
 from app.application.publishing import PublishingService
 from app.application.research import ResearchClient, ResearchService
 from app.config import load_settings
+from app.integrations.ebay.fulfillment import EbayFulfillmentOrdersSource
 from app.integrations.ebay.inventory import EbayInventoryClient
 from app.integrations.ebay.oauth import EbayOAuth, EbayTokenStore
 from app.integrations.ebay.rest import EbayRestClient
+from app.integrations.ebay.trading import EbayTradingBestOffersSource
 from app.integrations.openai.research import OpenAIResearchClient, UnconfiguredResearchClient
 from app.persistence.database import create_session_factory
 from app.security.secrets import SecretStore
@@ -28,12 +34,28 @@ _EBAY_SCOPES = (
 
 settings = load_settings()
 
-app = FastAPI(title="eBay Listing Copilot")
+
+@asynccontextmanager
+async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
+    job_runner: JobRunner = app.state.job_runner
+    activity_service: ActivityService = app.state.activity_service
+    job_runner.enqueue("STARTUP_ACTIVITY_REFRESH", {})
+
+    async def handle(_input_data: dict[str, object]) -> str | None:
+        await activity_service.refresh(RefreshTrigger.STARTUP)
+        return None
+
+    await job_runner.process_due({"STARTUP_ACTIVITY_REFRESH": handle})
+    yield
+
+
+app = FastAPI(title="eBay Listing Copilot", lifespan=_lifespan)
 app.include_router(health_router)
 app.include_router(items_router)
 app.include_router(research_router)
 app.include_router(auth_router)
 app.include_router(drafts_router)
+app.include_router(activity_router)
 
 app.state.session_factory = create_session_factory(settings.database_url)
 app.state.intake_service = IntakeService(
@@ -78,4 +100,11 @@ _ebay_rest_client = EbayRestClient(
 app.state.publishing_service = PublishingService(
     session_factory=app.state.session_factory,
     ebay_client=EbayInventoryClient(_ebay_rest_client),
+)
+app.state.activity_service = ActivityService(
+    session_factory=app.state.session_factory,
+    sources=[
+        EbayTradingBestOffersSource(_ebay_rest_client),
+        EbayFulfillmentOrdersSource(_ebay_rest_client),
+    ],
 )

@@ -82,6 +82,34 @@ class EbayInventoryClient:
             )
         return listing_id
 
+    def update_offer(self, offer_id: str, draft: ListingDraft) -> None:
+        self._rest_client.put(
+            f"/sell/inventory/v1/offer/{offer_id}",
+            {
+                "sku": draft.sku,
+                "marketplaceId": draft.marketplace_id,
+                "format": "FIXED_PRICE",
+                "categoryId": draft.category_id,
+                "listingDescription": draft.description,
+                "availableQuantity": draft.quantity,
+                "pricingSummary": {
+                    "price": {
+                        "value": str(draft.price.value),
+                        "currency": draft.price.currency,
+                    }
+                },
+                "listingPolicies": {
+                    "paymentPolicyId": draft.payment_policy_id,
+                    "returnPolicyId": draft.return_policy_id,
+                    "fulfillmentPolicyId": draft.fulfillment_policy_id,
+                },
+                "merchantLocationKey": draft.merchant_location_key,
+            },
+        )
+
+    def withdraw_offer(self, offer_id: str) -> None:
+        self._rest_client.post(f"/sell/inventory/v1/offer/{offer_id}/withdraw", {})
+
     def get_offer(self, offer_id: str) -> EbayOfferStatus:
         payload = self._rest_client.get(f"/sell/inventory/v1/offer/{offer_id}")
         listing = payload.get("listing")

@@ -41,6 +41,13 @@ def payload_hash(payload: dict[str, Any]) -> str:
 
 
 @dataclass(frozen=True)
+class DraftVersion:
+    draft_version_id: str
+    item_id: str
+    payload_hash: str
+
+
+@dataclass(frozen=True)
 class Approval:
     draft_version_id: str
     item_id: str
@@ -51,7 +58,8 @@ class ApprovalService:
     def __init__(self, session_factory: SessionFactory) -> None:
         self._session_factory = session_factory
 
-    def approve(self, item_id: str, draft: ListingDraft) -> Approval:
+    def create_draft_version(self, item_id: str, draft: ListingDraft) -> DraftVersion:
+        """Records a new canonical draft version without approving it."""
         payload = draft_to_canonical_dict(draft)
         hash_value = payload_hash(payload)
 
@@ -70,21 +78,46 @@ class ApprovalService:
                 payload_hash=hash_value,
             )
             session.add(draft_version)
-            session.flush()
+            session.commit()
 
-            approval = ApprovalModel(
+            return DraftVersion(
                 draft_version_id=draft_version.id,
+                item_id=item_id,
                 payload_hash=hash_value,
+            )
+
+    def approve(self, item_id: str, draft: ListingDraft) -> Approval:
+        version = self.create_draft_version(item_id, draft)
+        with self._session_factory() as session:
+            approval = ApprovalModel(
+                draft_version_id=version.draft_version_id,
+                payload_hash=version.payload_hash,
                 action="APPROVE",
             )
             session.add(approval)
             session.commit()
 
-            return Approval(
-                draft_version_id=draft_version.id,
-                item_id=item_id,
-                payload_hash=hash_value,
+        return Approval(
+            draft_version_id=version.draft_version_id,
+            item_id=item_id,
+            payload_hash=version.payload_hash,
+        )
+
+    def approve_existing_version(self, version: DraftVersion) -> Approval:
+        with self._session_factory() as session:
+            approval = ApprovalModel(
+                draft_version_id=version.draft_version_id,
+                payload_hash=version.payload_hash,
+                action="APPROVE",
             )
+            session.add(approval)
+            session.commit()
+
+        return Approval(
+            draft_version_id=version.draft_version_id,
+            item_id=version.item_id,
+            payload_hash=version.payload_hash,
+        )
 
     def matches(self, approval: Approval, draft: ListingDraft) -> bool:
         return approval.payload_hash == payload_hash(draft_to_canonical_dict(draft))
