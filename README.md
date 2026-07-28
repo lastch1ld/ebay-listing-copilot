@@ -40,8 +40,20 @@ Because eBay.it does not provide the same native calculated-shipping support ava
 
 The initial release focuses on listing creation, approval, publication, deliberate listing revisions, read-only notifications for offers, sales, and refunds, and manual tracking-number entry with a login-triggered delivery-status refresh. Order fulfillment, shipment label purchase, automatic tracking upload to eBay/buyers, customer messaging, returns processing, accounting, autonomous repricing, automatic offer responses, and automatic refunds are outside the first release.
 
+## Documentation
+
+- [Setup](docs/setup.md) — requirements, configuration, running locally and running the tests.
+- [Architecture](docs/architecture.md) — codebase map and key workflows.
+- [Privacy and safety model](docs/privacy.md) — approval hashing, idempotent publish, notification/tracking scope, data retention and deletion.
+- [Security policy](SECURITY.md) — supported versions and how to report a vulnerability privately.
+- [Contributing](CONTRIBUTING.md) — workflow and required checks for changes.
+
 The validated design is documented in [`docs/superpowers/specs/2026-07-17-ebay-listing-copilot-design.md`](docs/superpowers/specs/2026-07-17-ebay-listing-copilot-design.md).
 
 Mandatory credential-handling, security, coding, testing, and public-release rules are defined in [`AGENTS.md`](AGENTS.md).
 
 The approved task-by-task execution plan is in [`docs/superpowers/plans/2026-07-17-ebay-listing-copilot-implementation.md`](docs/superpowers/plans/2026-07-17-ebay-listing-copilot-implementation.md).
+
+## License
+
+MIT — see [`LICENSE`](LICENSE).

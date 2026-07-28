@@ -1,0 +1,43 @@
+{
+  "_comment": "Fictional example only. Not a real eBay listing, seller, or item.",
+  "sku": "SAMPLE-VINTAGE-LAMP-01",
+  "marketplace_id": "EBAY_IT",
+  "title": "Vintage brass table lamp, working condition, small scratch",
+  "category_id": "20697",
+  "condition_id": "3000",
+  "condition_description": "Small scratch on the left side of the base. Fully working; cord and switch tested.",
+  "description": "A fictional example listing used for documentation and tests only.",
+  "quantity": 1,
+  "price": { "currency": "EUR", "value": "80.00" },
+  "payment_policy_id": "SAMPLE-PAYMENT-POLICY",
+  "return_policy_id": "SAMPLE-RETURN-POLICY",
+  "fulfillment_policy_id": "SAMPLE-FULFILLMENT-POLICY",
+  "merchant_location_key": "SAMPLE-WAREHOUSE",
+  "packed_weight_kg": "1.2",
+  "length_cm": "20",
+  "width_cm": "15",
+  "height_cm": "10",
+  "research_fields": [
+    {
+      "field_name": "Model",
+      "value": "Fictional Model X",
+      "provenance": "INFERRED",
+      "confidence": 0.65,
+      "sources": []
+    }
+  ],
+  "shipping_zones": [
+    {
+      "zone": "ITALY",
+      "publishable": true,
+      "customs_warning": null,
+      "selected_price_label": "EUR 6.00"
+    },
+    {
+      "zone": "NON_EU_CONTINENTAL",
+      "publishable": true,
+      "customs_warning": "Duties and customs paperwork may apply for destinations outside the EU.",
+      "selected_price_label": "EUR 14.00"
+    }
+  ]
+}
