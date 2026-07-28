@@ -10,12 +10,14 @@ from app.api.routes.drafts import router as drafts_router
 from app.api.routes.health import router as health_router
 from app.api.routes.items import router as items_router
 from app.api.routes.research import router as research_router
+from app.api.routes.tracking import router as tracking_router
 from app.application.activity import ActivityService, RefreshTrigger
 from app.application.approval import ApprovalService
 from app.application.intake import IntakeService
 from app.application.jobs import JobRunner
 from app.application.publishing import PublishingService
 from app.application.research import ResearchClient, ResearchService
+from app.application.tracking import TrackingRefreshTrigger, TrackingService
 from app.config import load_settings
 from app.integrations.ebay.fulfillment import EbayFulfillmentOrdersSource
 from app.integrations.ebay.inventory import EbayInventoryClient
@@ -23,6 +25,11 @@ from app.integrations.ebay.oauth import EbayOAuth, EbayTokenStore
 from app.integrations.ebay.rest import EbayRestClient
 from app.integrations.ebay.trading import EbayTradingBestOffersSource
 from app.integrations.openai.research import OpenAIResearchClient, UnconfiguredResearchClient
+from app.integrations.tracking.base import TrackingProvider
+from app.integrations.tracking.carrier_adapter import (
+    AggregatorTrackingProvider,
+    UnconfiguredTrackingProvider,
+)
 from app.persistence.database import create_session_factory
 from app.security.secrets import SecretStore
 
@@ -39,13 +46,24 @@ settings = load_settings()
 async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
     job_runner: JobRunner = app.state.job_runner
     activity_service: ActivityService = app.state.activity_service
+    tracking_service: TrackingService = app.state.tracking_service
     job_runner.enqueue("STARTUP_ACTIVITY_REFRESH", {})
+    job_runner.enqueue("LOGIN_TRACKING_REFRESH", {})
 
-    async def handle(_input_data: dict[str, object]) -> str | None:
+    async def handle_activity(_input_data: dict[str, object]) -> str | None:
         await activity_service.refresh(RefreshTrigger.STARTUP)
         return None
 
-    await job_runner.process_due({"STARTUP_ACTIVITY_REFRESH": handle})
+    async def handle_tracking(_input_data: dict[str, object]) -> str | None:
+        await tracking_service.refresh(TrackingRefreshTrigger.LOGIN)
+        return None
+
+    await job_runner.process_due(
+        {
+            "STARTUP_ACTIVITY_REFRESH": handle_activity,
+            "LOGIN_TRACKING_REFRESH": handle_tracking,
+        }
+    )
     yield
 
 
@@ -56,6 +74,7 @@ app.include_router(research_router)
 app.include_router(auth_router)
 app.include_router(drafts_router)
 app.include_router(activity_router)
+app.include_router(tracking_router)
 
 app.state.session_factory = create_session_factory(settings.database_url)
 app.state.intake_service = IntakeService(
@@ -107,4 +126,15 @@ app.state.activity_service = ActivityService(
         EbayTradingBestOffersSource(_ebay_rest_client),
         EbayFulfillmentOrdersSource(_ebay_rest_client),
     ],
+)
+
+tracking_provider: TrackingProvider
+if settings.tracking_provider_base_url:
+    tracking_provider = AggregatorTrackingProvider(settings.tracking_provider_base_url)
+else:
+    tracking_provider = UnconfiguredTrackingProvider()
+
+app.state.tracking_service = TrackingService(
+    session_factory=app.state.session_factory,
+    provider=tracking_provider,
 )

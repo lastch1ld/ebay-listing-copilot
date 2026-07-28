@@ -180,3 +180,18 @@ class CheckpointModel(Base):
     source_name: Mapped[str] = mapped_column(primary_key=True)
     last_processed_at: Mapped[datetime] = mapped_column(nullable=False)
     cursor: Mapped[str | None] = mapped_column(nullable=True)
+
+
+class TrackingRecordModel(Base):
+    __tablename__ = "tracking_records"
+
+    id: Mapped[str] = mapped_column(primary_key=True, default=_uuid)
+    direction: Mapped[str] = mapped_column(nullable=False)
+    carrier: Mapped[str] = mapped_column(nullable=False)
+    tracking_number: Mapped[str] = mapped_column(nullable=False)
+    label: Mapped[str] = mapped_column(nullable=False)
+    item_id: Mapped[str | None] = mapped_column(ForeignKey("items.id"), nullable=True)
+    status: Mapped[str] = mapped_column(nullable=False, default="UNKNOWN")
+    checkpoints_json: Mapped[str] = mapped_column(nullable=False, default="[]")
+    created_at: Mapped[datetime] = mapped_column(nullable=False, default=_utcnow)
+    last_refreshed_at: Mapped[datetime | None] = mapped_column(nullable=True)
