@@ -160,8 +160,10 @@ git commit -m "chore: scaffold local listing copilot"
 ## Task 2: Define domain types, provenance, and workflow state
 
 **Files:**
-- Create: `backend/app/domain/common.py`, `item.py`, `draft.py`, `state.py`
+- Create: `backend/app/domain/common.py`, `state.py`
 - Test: `backend/tests/unit/domain/test_state.py`, `test_provenance.py`, `test_money.py`
+
+Note: `item.py` and `draft.py` are created later, in the tasks that first give them real content (item intake in Task 5, draft composition in Task 6), instead of as empty placeholders here.
 
 **Interfaces:**
 - Produces: `Money(currency: str, value: Decimal)`
