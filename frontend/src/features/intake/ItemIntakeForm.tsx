@@ -51,52 +51,82 @@ export function ItemIntakeForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} aria-label="Item intake">
-      <label htmlFor="description">Description</label>
-      <textarea
-        id="description"
-        value={description}
-        onChange={(event) => setDescription(event.target.value)}
-      />
+    <form onSubmit={handleSubmit} aria-label="Item intake" className="card">
+      <h1>New item</h1>
+      <p className="section-label" style={{ marginTop: "var(--space-2)" }}>
+        Photos, description, defects, and target price
+      </p>
 
-      <label htmlFor="defects">Known defects</label>
-      <textarea
-        id="defects"
-        value={defectsText}
-        disabled={noKnownDefects}
-        onChange={(event) => setDefectsText(event.target.value)}
-      />
-      <label htmlFor="no-known-defects">
-        <input
-          id="no-known-defects"
-          type="checkbox"
-          checked={noKnownDefects}
-          onChange={(event) => setNoKnownDefects(event.target.checked)}
-        />
-        No known defects
-      </label>
+      <div className="two-column" style={{ marginTop: "var(--space-5)" }}>
+        <div className="stack">
+          <div className="field">
+            <label htmlFor="photos">Photos</label>
+            <input
+              id="photos"
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              multiple
+              onChange={(event) => setPhotos(Array.from(event.target.files ?? []))}
+            />
+            {photos.length > 0 && (
+              <span className="badge">
+                {photos.length} photo{photos.length === 1 ? "" : "s"} selected
+              </span>
+            )}
+          </div>
+        </div>
 
-      <label htmlFor="target-price">Target price (EUR)</label>
-      <input
-        id="target-price"
-        type="text"
-        inputMode="decimal"
-        value={targetPriceValue}
-        onChange={(event) => setTargetPriceValue(event.target.value)}
-      />
+        <div className="stack">
+          <div className="field">
+            <label htmlFor="description">Description</label>
+            <textarea
+              id="description"
+              value={description}
+              onChange={(event) => setDescription(event.target.value)}
+            />
+          </div>
 
-      <label htmlFor="photos">Photos</label>
-      <input
-        id="photos"
-        type="file"
-        accept="image/jpeg,image/png,image/webp"
-        multiple
-        onChange={(event) => setPhotos(Array.from(event.target.files ?? []))}
-      />
+          <div className="field">
+            <label htmlFor="defects">Known defects</label>
+            <textarea
+              id="defects"
+              value={defectsText}
+              disabled={noKnownDefects}
+              onChange={(event) => setDefectsText(event.target.value)}
+            />
+          </div>
+          <div className="field field--checkbox">
+            <input
+              id="no-known-defects"
+              type="checkbox"
+              checked={noKnownDefects}
+              onChange={(event) => setNoKnownDefects(event.target.checked)}
+            />
+            <label htmlFor="no-known-defects">No known defects</label>
+          </div>
 
-      {error && <p role="alert">{error}</p>}
+          <div className="field">
+            <label htmlFor="target-price">Target price (EUR)</label>
+            <input
+              id="target-price"
+              type="text"
+              inputMode="decimal"
+              value={targetPriceValue}
+              onChange={(event) => setTargetPriceValue(event.target.value)}
+            />
+          </div>
+        </div>
+      </div>
 
-      <button type="submit">Continue</button>
+      {error && (
+        <p className="alert" role="alert" style={{ marginTop: "var(--space-4)" }}>
+          {error}
+        </p>
+      )}
+
+      <button type="submit" className="button button--primary" style={{ marginTop: "var(--space-5)" }}>
+        Continue
+      </button>
     </form>
   );
 }

@@ -39,8 +39,16 @@ function IntakeContainer() {
             .catch(() => setError("Could not create the item. Please try again."));
         }}
       />
-      {confirmation && <p role="status">Item created: {confirmation}</p>}
-      {error && <p role="alert">{error}</p>}
+      {confirmation && (
+        <p className="status" role="status">
+          Item created: {confirmation}
+        </p>
+      )}
+      {error && (
+        <p className="alert" role="alert">
+          {error}
+        </p>
+      )}
     </>
   );
 }
@@ -76,11 +84,12 @@ export function AppRouter() {
 
   return (
     <div>
-      <nav aria-label="Main navigation">
+      <nav className="app-nav" aria-label="Main navigation">
         {ROUTES.map((candidate) => (
           <button
             key={candidate}
             type="button"
+            className="app-nav__tab"
             aria-current={route === candidate ? "page" : undefined}
             onClick={() => setRoute(candidate)}
           >
@@ -88,7 +97,7 @@ export function AppRouter() {
           </button>
         ))}
       </nav>
-      <main>
+      <main className="app-content">
         {route === "intake" && <IntakeContainer />}
         {route === "review" && <DraftReview draft={null} />}
         {route === "listings" && <ListingDashboard />}

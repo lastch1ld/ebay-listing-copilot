@@ -39,86 +39,108 @@ export function TrackingList({
   };
 
   return (
-    <section aria-label="Tracking">
-      <h1>Tracking</h1>
+    <section aria-label="Tracking" className="stack">
+      <div className="card">
+        <h1>Tracking</h1>
 
-      <form onSubmit={handleSubmit} aria-label="Add tracking number">
-        <label htmlFor="tracking-direction">Direction</label>
-        <select
-          id="tracking-direction"
-          value={direction}
-          onChange={(event) => setDirection(event.target.value as TrackingDirection)}
-        >
-          <option value="OUTBOUND">Outbound (sold item)</option>
-          <option value="INBOUND">Inbound (personal package)</option>
-        </select>
+        <form onSubmit={handleSubmit} aria-label="Add tracking number" style={{ marginTop: "var(--space-4)" }}>
+          <div className="two-column">
+            <div className="field">
+              <label htmlFor="tracking-direction">Direction</label>
+              <select
+                id="tracking-direction"
+                value={direction}
+                onChange={(event) => setDirection(event.target.value as TrackingDirection)}
+              >
+                <option value="OUTBOUND">Outbound (sold item)</option>
+                <option value="INBOUND">Inbound (personal package)</option>
+              </select>
+            </div>
 
-        <label htmlFor="tracking-carrier">Carrier</label>
-        <input
-          id="tracking-carrier"
-          value={carrier}
-          onChange={(event) => setCarrier(event.target.value)}
-        />
+            <div className="field">
+              <label htmlFor="tracking-carrier">Carrier</label>
+              <input
+                id="tracking-carrier"
+                value={carrier}
+                onChange={(event) => setCarrier(event.target.value)}
+              />
+            </div>
 
-        <label htmlFor="tracking-number">Tracking number</label>
-        <input
-          id="tracking-number"
-          value={trackingNumber}
-          onChange={(event) => setTrackingNumber(event.target.value)}
-        />
+            <div className="field">
+              <label htmlFor="tracking-number">Tracking number</label>
+              <input
+                id="tracking-number"
+                value={trackingNumber}
+                onChange={(event) => setTrackingNumber(event.target.value)}
+              />
+            </div>
 
-        <label htmlFor="tracking-label">Label</label>
-        <input id="tracking-label" value={label} onChange={(event) => setLabel(event.target.value)} />
+            <div className="field">
+              <label htmlFor="tracking-label">Label</label>
+              <input
+                id="tracking-label"
+                value={label}
+                onChange={(event) => setLabel(event.target.value)}
+              />
+            </div>
 
-        {direction === "OUTBOUND" && (
-          <>
-            <label htmlFor="tracking-item-id">Linked item (optional)</label>
-            <input
-              id="tracking-item-id"
-              value={itemId}
-              onChange={(event) => setItemId(event.target.value)}
-            />
-          </>
-        )}
+            {direction === "OUTBOUND" && (
+              <div className="field">
+                <label htmlFor="tracking-item-id">Linked item (optional)</label>
+                <input
+                  id="tracking-item-id"
+                  value={itemId}
+                  onChange={(event) => setItemId(event.target.value)}
+                />
+              </div>
+            )}
+          </div>
 
-        <button type="submit">Add tracking number</button>
-      </form>
+          <button type="submit" className="button button--primary">
+            Add tracking number
+          </button>
+        </form>
+      </div>
 
       {records.length === 0 ? (
-        <p>No tracked packages yet.</p>
+        <p className="empty-state">No tracked packages yet.</p>
       ) : (
-        <table>
-          <thead>
-            <tr>
-              <th>Direction</th>
-              <th>Label</th>
-              <th>Item</th>
-              <th>Carrier</th>
-              <th>Tracking number</th>
-              <th>Status</th>
-              <th>Last refreshed</th>
-              <th />
-            </tr>
-          </thead>
-          <tbody>
-            {records.map((record) => (
-              <tr key={record.id}>
-                <td>{record.direction}</td>
-                <td>{record.label}</td>
-                <td>{record.item_id ?? "—"}</td>
-                <td>{record.carrier}</td>
-                <td>{record.tracking_number}</td>
-                <td>{record.status}</td>
-                <td>{record.last_refreshed_at ?? "Never"}</td>
-                <td>
-                  <button type="button" onClick={() => onRefresh?.(record.id)}>
-                    Refresh now
-                  </button>
-                </td>
+        <div className="card">
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Direction</th>
+                <th>Label</th>
+                <th>Item</th>
+                <th>Carrier</th>
+                <th>Tracking number</th>
+                <th>Status</th>
+                <th>Last refreshed</th>
+                <th />
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {records.map((record) => (
+                <tr key={record.id}>
+                  <td>{record.direction}</td>
+                  <td>{record.label}</td>
+                  <td>{record.item_id ?? "—"}</td>
+                  <td>{record.carrier}</td>
+                  <td>{record.tracking_number}</td>
+                  <td>
+                    <span className="badge">{record.status}</span>
+                  </td>
+                  <td>{record.last_refreshed_at ?? "Never"}</td>
+                  <td>
+                    <button type="button" className="button" onClick={() => onRefresh?.(record.id)}>
+                      Refresh now
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </section>
   );

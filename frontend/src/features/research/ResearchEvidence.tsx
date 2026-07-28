@@ -15,13 +15,16 @@ export function ResearchEvidence({ fields }: { fields: ResearchField[] }) {
   return (
     <section aria-label="Research evidence">
       <h2>Research evidence</h2>
-      <ul>
+      <div className="stack" style={{ marginTop: "var(--space-2)" }}>
         {fields.map((field) => (
-          <li key={field.fieldName}>
-            <strong>{field.fieldName}:</strong> {field.value ?? "Unknown"} (
-            {PROVENANCE_LABEL[field.provenance]}, confidence {Math.round(field.confidence * 100)}%)
+          <div key={field.fieldName}>
+            <p>
+              <strong>{field.fieldName}:</strong> {field.value ?? "Unknown"}{" "}
+              <span className="badge badge--accent">{PROVENANCE_LABEL[field.provenance]}</span>{" "}
+              <span className="badge">confidence {Math.round(field.confidence * 100)}%</span>
+            </p>
             {field.sources.length > 0 && (
-              <ul>
+              <ul style={{ marginTop: "var(--space-1)" }}>
                 {field.sources.map((source) => (
                   <li key={source}>
                     <a href={source} target="_blank" rel="noreferrer">
@@ -31,9 +34,9 @@ export function ResearchEvidence({ fields }: { fields: ResearchField[] }) {
                 ))}
               </ul>
             )}
-          </li>
+          </div>
         ))}
-      </ul>
+      </div>
     </section>
   );
 }

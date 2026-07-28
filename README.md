@@ -4,6 +4,11 @@ eBay Listing Copilot is a local, approval-driven web application for creating an
 
 The seller supplies item photos, a short description, known defects, and a target price. The application researches the item and comparable listings, prepares the required listing information, researches domestic and continental-European shipping, and creates an unpublished eBay draft. It presents a concise evidence-backed summary and publishes only after the seller explicitly approves that exact draft.
 
+<p align="center">
+  <img src="docs/images/app-intake.png" alt="Item intake screen" width="49%">
+  <img src="docs/images/app-tracking.png" alt="Package tracking screen" width="49%">
+</p>
+
 ## Intended workflow
 
 1. Add item photos, a short description, known defects, and a target price.
