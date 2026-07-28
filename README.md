@@ -13,6 +13,7 @@ The seller supplies item photos, a short description, known defects, and a targe
 5. Approve, reject, or request changes.
 6. Publish the approved draft and receive the live eBay URL and listing ID.
 7. On later app launches or listing changes, review one-time alerts for new offers, completed sales, and refunds.
+8. Enter the carrier and tracking number for any package — items shipped to buyers, or personal inbound packages the seller is receiving — and see delivery status refreshed automatically on every login.
 
 ## Core principles
 
@@ -37,7 +38,7 @@ Because eBay.it does not provide the same native calculated-shipping support ava
 
 ## Initial scope
 
-The initial release focuses on listing creation, approval, publication, deliberate listing revisions, and read-only notifications for offers, sales, and refunds. Order fulfillment, customer messaging, returns processing, accounting, autonomous repricing, automatic offer responses, and automatic refunds are outside the first release.
+The initial release focuses on listing creation, approval, publication, deliberate listing revisions, read-only notifications for offers, sales, and refunds, and manual tracking-number entry with a login-triggered delivery-status refresh. Order fulfillment, shipment label purchase, automatic tracking upload to eBay/buyers, customer messaging, returns processing, accounting, autonomous repricing, automatic offer responses, and automatic refunds are outside the first release.
 
 The validated design is documented in [`docs/superpowers/specs/2026-07-17-ebay-listing-copilot-design.md`](docs/superpowers/specs/2026-07-17-ebay-listing-copilot-design.md).
 

@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build a private local web application that turns item photos, a description, and a target price into a researched, shipping-aware eBay draft; publishes only the exact approved version; manages later revisions; and shows one-time offer, sale, and refund notifications.
+**Goal:** Build a private local web application that turns item photos, a description, and a target price into a researched, shipping-aware eBay draft; publishes only the exact approved version; manages later revisions; shows one-time offer, sale, and refund notifications; and tracks seller-entered shipment tracking numbers with a status refresh on login.
 
-**Architecture:** Use a React/TypeScript frontend and a FastAPI/Python backend bound to loopback. Keep domain rules independent of providers, persist workflow state in SQLite, store credentials in the operating-system keychain, and place eBay, OpenAI, and shipping behavior behind typed adapters. Use eBay Inventory offers as unpublished eBay drafts, Media for photos, Account for policies, Fulfillment for orders/refunds, and Trading `GetBestOffers` for buyer offers.
+**Architecture:** Use a React/TypeScript frontend and a FastAPI/Python backend bound to loopback. Keep domain rules independent of providers, persist workflow state in SQLite, store credentials in the operating-system keychain, and place eBay, OpenAI, shipping, and carrier-tracking behavior behind typed adapters. Use eBay Inventory offers as unpublished eBay drafts, Media for photos, Account for policies, Fulfillment for orders/refunds, and Trading `GetBestOffers` for buyer offers.
 
 **Tech Stack:** Python 3.12+, FastAPI, Pydantic 2, SQLAlchemy 2, Alembic, httpx, keyring, pytest, respx; Node.js 22+, React, TypeScript, Vite, TanStack Query, Vitest, Testing Library, Playwright; SQLite; OpenAI Responses API adapter; eBay REST and Trading APIs; GitHub Actions.
 
@@ -23,6 +23,8 @@
 - Use idempotency records and reconciliation before retrying an ambiguous eBay mutation.
 - Refresh offers, sales, and refunds once at app startup and once after successful listing mutations; do not poll continuously.
 - Notification refresh is read-only and may not accept offers or issue refunds.
+- Refresh open (undelivered) tracking records once on login and on demand per record; do not poll continuously.
+- Tracking numbers are entered manually by the seller; the application never purchases labels or uploads tracking to eBay/buyers.
 - Inventory API listings cannot be edited in Seller Hub; show this limitation before the first Production publish.
 - Required CI must be credential-free. Credentialed eBay Sandbox tests run only through a protected manual workflow.
 
@@ -41,12 +43,13 @@ ebay-listing-copilot/
 │   ├── app/
 │   │   ├── main.py
 │   │   ├── config.py
-│   │   ├── api/routes/{health,items,research,drafts,activity,auth}.py
-│   │   ├── domain/{common,item,draft,shipping,activity,state}.py
-│   │   ├── application/{intake,jobs,research,drafting,approval,publishing,listing_management,activity}.py
+│   │   ├── api/routes/{health,items,research,drafts,activity,tracking,auth}.py
+│   │   ├── domain/{common,item,draft,shipping,activity,tracking,state}.py
+│   │   ├── application/{intake,jobs,research,drafting,approval,publishing,listing_management,activity,tracking}.py
 │   │   ├── integrations/ebay/{oauth,rest,inventory,media,account,taxonomy,metadata,fulfillment,trading}.py
 │   │   ├── integrations/openai/research.py
 │   │   ├── integrations/shipping/{base,research,fixed_rates}.py
+│   │   ├── integrations/tracking/{base,carrier_adapter}.py
 │   │   ├── persistence/{database,models,repositories,migrations}.py
 │   │   └── security/{secrets,redaction}.py
 │   └── tests/{unit,integration,contract,e2e}/
@@ -60,7 +63,8 @@ ebay-listing-copilot/
 │   │   ├── features/research/
 │   │   ├── features/review/
 │   │   ├── features/listings/
-│   │   └── features/activity/
+│   │   ├── features/activity/
+│   │   └── features/tracking/
 │   └── tests/
 └── scripts/{check_no_secrets.py,verify_no_production_calls.py}
 ```
@@ -705,7 +709,75 @@ git add backend/app/application/listing_management.py backend/app/application/ac
 git commit -m "feat: notify once for offers sales and refunds"
 ```
 
-## Task 12: Build the review, approval, listing, and notification interface
+## Task 12: Add manual tracking entry and login-triggered carrier status refresh
+
+**Files:**
+- Create: `backend/app/domain/tracking.py`
+- Create: `backend/app/integrations/tracking/base.py`, `carrier_adapter.py`
+- Create: `backend/app/application/tracking.py`
+- Create: `backend/app/api/routes/tracking.py`
+- Test: `backend/tests/unit/domain/test_tracking.py`, `backend/tests/unit/application/test_tracking.py`
+- Test: `backend/tests/contract/test_tracking_adapter.py`
+
+**Interfaces:**
+- Produces: `TrackingService.add(direction: OUTBOUND|INBOUND, carrier, tracking_number, label, item_id: str | None = None) -> TrackingRecord`.
+- Produces: `TrackingService.refresh(trigger: LOGIN|MANUAL, record_id: str | None = None) -> TrackingRefreshSummary`.
+- Produces: normalized `TrackingStatus` (`INFO_RECEIVED`, `IN_TRANSIT`, `OUT_FOR_DELIVERY`, `DELIVERED`, `EXCEPTION`, `UNKNOWN`) and `TrackingCheckpoint` (description, location, provider timestamp).
+- Consumes: `TrackingProvider.lookup(carrier, tracking_number) -> TrackingSnapshot` behind a narrow adapter interface with no eBay or shipping-quote dependencies.
+
+- [ ] **Step 1: Test status normalization, delivered-record exclusion, and both directions**
+
+```python
+async def test_delivered_record_excluded_from_login_refresh(tracking_service, provider):
+    record = await tracking_service.add(direction="OUTBOUND", carrier="dhl", tracking_number="JD0001", label="Sold: lens", item_id="item-1")
+    provider.snapshots[record.id] = tracking_snapshot(status="DELIVERED")
+    await tracking_service.refresh(RefreshTrigger.LOGIN)
+
+    provider.snapshots[record.id] = tracking_snapshot(status="EXCEPTION")
+    summary = await tracking_service.refresh(RefreshTrigger.LOGIN)
+    assert summary.checked == 0  # delivered record skipped automatically
+
+async def test_manual_refresh_still_reaches_delivered_record(tracking_service, provider):
+    record = await tracking_service.add(direction="OUTBOUND", carrier="dhl", tracking_number="JD0001", label="Sold: lens", item_id="item-1")
+    provider.snapshots[record.id] = tracking_snapshot(status="DELIVERED")
+    await tracking_service.refresh(RefreshTrigger.LOGIN)
+
+    summary = await tracking_service.refresh(RefreshTrigger.MANUAL, record_id=record.id)
+    assert summary.checked == 1
+
+async def test_inbound_record_requires_no_item_link(tracking_service):
+    record = await tracking_service.add(direction="INBOUND", carrier="ups", tracking_number="1Z999", label="Replacement battery")
+    assert record.item_id is None
+    assert record.direction == "INBOUND"
+```
+
+- [ ] **Step 2: Implement the tracking domain and manual entry**
+
+`TrackingRecord` requires `direction` (`OUTBOUND`/`INBOUND`), `carrier`, `tracking_number`, `label`, creation timestamp, and an optional `item_id`; it starts with status `UNKNOWN` and no checkpoints until the first refresh. `item_id` is only meaningful for `OUTBOUND` records and, when present, must reference a local item already in state `LIVE` or later. `INBOUND` records never carry an `item_id` and have no relationship to any listing, order, or eBay data. Persist records and their latest snapshot in SQLite.
+
+- [ ] **Step 3: Implement the provider-neutral carrier tracking adapter**
+
+Define `TrackingProvider` as a narrow interface parsed into `TrackingSnapshot` (status, checkpoints, last update time). Implement one adapter against a chosen tracking API/aggregator (see deferred decision in the design spec) plus a deterministic fixture provider for tests. Adapter failures raise a normalized `TrackingLookupError` and never raise raw provider exceptions to the application layer.
+
+- [ ] **Step 4: Implement login and on-demand refresh**
+
+`TrackingService.refresh(LOGIN)` queries every record whose last known status is not `DELIVERED`, updates status/checkpoints on success, and leaves the last known good status untouched on a per-record adapter failure. Refresh never runs on a timer. Enqueue one `LOGIN_TRACKING_REFRESH` job after authentication succeeds, alongside the existing startup activity refresh. `refresh(MANUAL, record_id=...)` refreshes exactly one record regardless of its current status.
+
+- [ ] **Step 5: Add the tracking API route**
+
+Expose `POST /api/tracking` to add a record (direction, carrier, tracking number, label, and optional item_id), `GET /api/tracking` to list all records across both directions, and `POST /api/tracking/{record_id}/refresh` for on-demand refresh; all require the same auth as other routes. Never expose a route that writes tracking data to eBay.
+
+- [ ] **Step 6: Run tracking tests and commit**
+
+Run: `cd backend && python -m pytest tests/unit/domain/test_tracking.py tests/unit/application/test_tracking.py tests/contract/test_tracking_adapter.py -q`  
+Expected: PASS.
+
+```bash
+git add backend/app/domain/tracking.py backend/app/integrations/tracking backend/app/application/tracking.py backend/app/api/routes/tracking.py backend/tests
+git commit -m "feat: add manual tracking entry and login status refresh"
+```
+
+## Task 13: Build the review, approval, listing, and notification interface
 
 **Files:**
 - Create: `frontend/src/api/client.ts`, `frontend/src/app/router.tsx`
@@ -713,10 +785,11 @@ git commit -m "feat: notify once for offers sales and refunds"
 - Create: `frontend/src/features/review/DraftReview.tsx`, `ApprovalSummary.tsx`
 - Create: `frontend/src/features/listings/ListingDashboard.tsx`
 - Create: `frontend/src/features/activity/NotificationCenter.tsx`
+- Create: `frontend/src/features/tracking/TrackingList.tsx`
 - Test: matching `*.test.tsx` files.
 
 **Interfaces:**
-- Consumes: typed `/api/items`, `/research`, `/drafts`, `/activity`, and `/auth` responses.
+- Consumes: typed `/api/items`, `/research`, `/drafts`, `/activity`, `/tracking`, and `/auth` responses.
 
 - [ ] **Step 1: Test that review exposes defects, uncertainty, shipping, and price differences**
 
@@ -742,6 +815,8 @@ Show photos, title, category, aspects, condition/defects, sources, provenance, t
 
 Show local/eBay state, last synchronization, listing URL, and proposed revision actions. Notification cards show event type, listing title, amount/currency, status, and time; exclude buyer address/email/payment data. Marking read changes only local state.
 
+Implement `TrackingList` as a standalone view (not nested under a single item) showing direction, label, linked item (if any), carrier, tracking number, current status, last checkpoint, last successful refresh time, and a link to the carrier's own tracking page. Include an "Add tracking number" form that lets the seller choose outbound (optionally linked to one of their items) or inbound (no item link), and a per-row "Refresh now" action.
+
 - [ ] **Step 5: Run frontend tests and accessibility checks**
 
 Run: `cd frontend && npm test -- --run && npm run lint && npm run typecheck && npm run build`  
@@ -754,7 +829,7 @@ git add frontend/src frontend/tests
 git commit -m "feat: add listing review and activity interface"
 ```
 
-## Task 13: Add end-to-end tests, protected Sandbox workflow, and production-call guard
+## Task 14: Add end-to-end tests, protected Sandbox workflow, and production-call guard
 
 **Files:**
 - Create: `frontend/tests/e2e/listing-flow.spec.ts`
@@ -768,7 +843,7 @@ git commit -m "feat: add listing review and activity interface"
 
 - [ ] **Step 1: Add mocked browser E2E coverage**
 
-Test intake → research evidence → confirmed shipping → eBay draft → approval → publish result → notification refresh. Add a second test that edits price after approval and confirms publication is blocked until reapproval.
+Test intake → research evidence → confirmed shipping → eBay draft → approval → publish result → notification refresh. Add a second test that edits price after approval and confirms publication is blocked until reapproval. Add a third test that adds an outbound tracking number linked to an item and a fourth that adds an inbound tracking number with no item link, then confirms both statuses appear after a simulated login refresh.
 
 Run: `cd frontend && npx playwright test tests/e2e/listing-flow.spec.ts`  
 Expected: PASS using mocked backend/provider fixtures.
@@ -799,7 +874,7 @@ git add .github frontend/tests/e2e backend/tests/e2e scripts
 git commit -m "ci: verify listing workflow and sandbox publishing"
 ```
 
-## Task 14: Complete documentation, privacy checks, and public-repository readiness
+## Task 15: Complete documentation, privacy checks, and public-repository readiness
 
 **Files:**
 - Modify: `README.md`, `AGENTS.md`
@@ -815,7 +890,7 @@ Explain Python/Node requirements, local startup, eBay developer account approval
 
 - [ ] **Step 2: Document the approval and notification safety model**
 
-Explain canonical draft hashes, reapproval after material changes, idempotent publish, read-only notifications, trigger timing, no continuous polling, data retention, local deletion/export, and incident response.
+Explain canonical draft hashes, reapproval after material changes, idempotent publish, read-only notifications, manual tracking entry and login-triggered status refresh, trigger timing, no continuous polling, data retention, local deletion/export, and incident response.
 
 - [ ] **Step 3: Add public repository governance**
 
@@ -853,6 +928,7 @@ git commit -m "docs: prepare listing copilot for public reference"
 - [ ] Known defects appear in the final eBay payload.
 - [ ] Shipping publication is blocked without confirmed dimensions and fresh selected rates for enabled zones.
 - [ ] Offer, sale, and refund events alert once per material status and never trigger writes.
+- [ ] A manually entered tracking number shows a normalized status after login refresh, without any write to eBay or the carrier.
 - [ ] Logs, notifications, fixtures, artifacts, and Git history contain no credentials or personal seller/buyer data.
 - [ ] The owner reviews the exact repository contents before making it public.
 

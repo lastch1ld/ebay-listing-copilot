@@ -18,6 +18,7 @@ The project is intended to become a public GitHub reference repository. All real
 - Research product details and pricing with visible sources and uncertainty labels.
 - Research shipping within Italy and across continental Europe, including non-EU destinations.
 - Surface new offers, completed sales, and refunds through deduplicated, read-only notifications.
+- Let the seller record a carrier and tracking number for any package — items they've sold and shipped, or personal packages they're receiving — and see delivery status refreshed automatically on login.
 - Bind approval to an immutable draft version so an approved listing cannot change silently before publication.
 - Provide a modular, testable codebase that is safe to publish.
 
@@ -26,7 +27,7 @@ The project is intended to become a public GitHub reference repository. All real
 - Autonomous publication without seller approval.
 - Automatic price changes, relisting, or ending of live listings.
 - Automatic offer acceptance, countering, rejection, or refund issuance.
-- Order fulfillment, shipment purchase, tracking upload, customer messaging, returns, or accounting.
+- Order fulfillment, shipment label purchase, automatic tracking-number upload to eBay/buyers, customer messaging, returns, or accounting. (Manually recording a tracking number the seller already has, and reading back its carrier status for the seller's own view, is in scope — see §4.9.)
 - Bulk multi-seller or marketplace-as-a-service operation.
 - Guaranteed item identification from images alone.
 - Legal, tax, customs, authenticity, or appraisal guarantees.
@@ -143,6 +144,27 @@ Notifications show only the minimum seller-relevant information: listing title, 
 
 This feature is read-only. Refreshing notifications never accepts, counters, or declines an offer and never issues a refund. Those actions are outside the first release and would require a separate approval-bound design.
 
+### 4.9 Package tracking
+
+The seller can manually track any package, not only ones tied to their own listings:
+
+- **Outbound** — an item the seller has sold and shipped to a buyer. May optionally link to the corresponding local item/order record.
+- **Inbound** — a package the seller is personally receiving (e.g., something they purchased elsewhere), with no listing or order link at all.
+
+For either direction the seller manually enters the carrier and tracking number plus a short free-text label (e.g., "Sold: vintage lens" or "Inbound: replacement battery"). The application does not purchase labels, generate tracking numbers, or push tracking information to eBay or the buyer; for outbound packages the seller remains responsible for fulfilling the order and notifying eBay through their existing process.
+
+For each entered tracking record the application stores the direction (`OUTBOUND`/`INBOUND`), carrier, tracking number, free-text label, an optional linked item/order (outbound only), the entry timestamp, and the most recent status snapshot.
+
+Status refresh follows the same trigger-based model as activity notifications:
+
+1. Run once after the application finishes loading and the seller is authenticated (i.e., on login).
+2. Do not poll continuously in the background.
+3. The seller may also request an on-demand refresh for a single package from its detail view.
+
+Refresh queries a provider-neutral tracking adapter for each open (not yet delivered) tracking record, normalizes the result to a common status (e.g., `INFO_RECEIVED`, `IN_TRANSIT`, `OUT_FOR_DELIVERY`, `DELIVERED`, `EXCEPTION`, `UNKNOWN`), and records the latest checkpoint description, location, and provider timestamp. Delivered packages stop being included in future automatic refreshes but may still be refreshed on demand. A carrier or lookup failure marks that record's refresh as failed without discarding its last known good status, and the summary reports which records could not be refreshed.
+
+The tracking list shows, per package: direction, label, linked item (if any), carrier, tracking number, current status, last checkpoint, and last successful refresh time, with a link to the carrier's own tracking page as a fallback. Outbound and inbound packages appear in the same list and refresh together; inbound packages never have any eBay or buyer interaction. This feature never writes to eBay, never messages a buyer, and never marks an order as delivered on eBay automatically.
+
 ## 5. Shipping design
 
 ### 5.1 Scope
@@ -204,6 +226,7 @@ The application runs locally and binds only to the loopback interface by default
 8. **Local persistence** — stores settings, item records, research evidence, draft versions, approvals, operation logs, and eBay identifiers.
 9. **Background job runner** — executes bounded research, quote collection, image processing, and eBay synchronization with retry rules.
 10. **Activity monitor** — performs trigger-based offer, sale, and refund refreshes; normalizes provider records; advances checkpoints; and creates deduplicated local notifications.
+11. **Tracking service** — stores seller-entered carrier tracking numbers and performs trigger-based (login and on-demand) status refreshes through a replaceable carrier tracking adapter, without writing back to eBay or the carrier.
 
 ### 6.2 Dependency boundaries
 
@@ -213,6 +236,7 @@ The application runs locally and binds only to the loopback interface by default
 - Publication requires an approval record from the approval service; the web interface cannot bypass this rule.
 - Provider-specific failures remain inside their adapters and surface as normalized actionable errors.
 - Activity refresh is read-only and cannot invoke offer-response or refund-write operations.
+- Tracking refresh is read-only against the carrier adapter and cannot invoke eBay write operations or buyer messaging.
 
 ### 6.3 Suggested implementation shape
 
@@ -272,6 +296,7 @@ Recoverable failures enter `ACTION_REQUIRED`; nonrecoverable failures enter `FAI
 - Draft hashing and approval invalidation
 - State-transition rules and redaction
 - Activity deduplication keys, read state, and checkpoint advancement
+- Tracking status normalization and delivered-record exclusion from automatic refresh
 
 ### 10.2 Integration tests
 
@@ -281,6 +306,7 @@ Recoverable failures enter `ACTION_REQUIRED`; nonrecoverable failures enter `FAI
 - OAuth callback and token-refresh flows without exposing secrets
 - Local persistence and restart recovery
 - Trading `GetBestOffers` and Fulfillment order/refund activity normalization
+- Tracking adapter against recorded carrier fixtures for each supported status
 
 ### 10.3 End-to-end tests
 
@@ -294,6 +320,9 @@ Recoverable failures enter `ACTION_REQUIRED`; nonrecoverable failures enter `FAI
 - Startup activity refresh creating each new offer, sale, or refund alert once
 - Post-listing-change refresh without continuous polling
 - Partial activity-source failure preserving successful notifications
+- Manually entering a tracking number and receiving a normalized status on next login
+- Delivered packages excluded from automatic refresh but still refreshable on demand
+- Carrier lookup failure preserving the last known good tracking status
 
 No production listing is used as an automated test target.
 
@@ -334,6 +363,7 @@ The first release is successful when a seller can:
 6. Publish once without duplication and receive the live listing URL and ID.
 7. Propose a later revision and be required to approve it before it affects the live listing.
 8. Launch the app or change a listing and receive each newly observed offer, completed sale, or refund-status change once.
+9. Enter a tracking number for a shipped item or a personal inbound package once and see its delivery status kept current on every login without manual carrier lookups.
 
 ## 13. Deferred decisions for implementation planning
 
@@ -345,6 +375,7 @@ The execution plan will resolve these choices using current official documentati
 - eBay Inventory versus traditional listing API strategy for creation and continued Seller Hub compatibility
 - Packaging and background-job libraries
 - Operating-system secret storage implementation
+- Initial carrier tracking provider (e.g., a multi-carrier tracking API/aggregator versus per-carrier adapters) and its supported carrier list
 - Exact CI commands, action versions, and protected-environment configuration after the implementation stack is selected
 
 These decisions do not change the approved user workflow or safety boundaries.

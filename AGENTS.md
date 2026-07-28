@@ -205,6 +205,15 @@ Security-sensitive changes involving OAuth, secret storage, publishing, approval
 - Cache dependencies only by lockfile hash and never cache secret stores, `.env` files, databases, uploads, or provider responses.
 - Branch protection should require the credential-free pipeline before merge once the repository is public.
 
+## 15a. Build workflow for this implementation pass
+
+- Follow `docs/superpowers/plans/2026-07-17-ebay-listing-copilot-implementation.md` task-by-task, in order; do not skip ahead or merge tasks.
+- Within a task, follow test-driven development exactly as the plan's steps specify: write the failing test, watch it fail, implement the minimal code, then make it pass.
+- Commit at the end of every completed task (the plan's own "commit" step), using the plan's suggested message or a truthful equivalent. Do not batch multiple tasks into one commit.
+- Run the task's specified local verification commands (lint, type check, tests, build) before committing; do not commit on a failing check.
+- If a step reveals the plan is wrong or infeasible as written, stop, fix the plan document first, then resume — don't silently diverge from documented scope.
+- No network calls to real eBay, OpenAI, or shipping/tracking providers during this pass; use fixtures and sandbox-only paths per the plan.
+
 ## 15. Public-release checklist
 
 Before the repository becomes public:
