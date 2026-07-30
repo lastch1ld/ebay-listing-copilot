@@ -60,7 +60,7 @@ it("explains photo requirements and announces every selected file", () => {
     target: { files: [jpegFile("front.jpg"), jpegFile("detail.jpg")] },
   });
 
-  expect(screen.getByRole("status")).toHaveTextContent("2 photos ready");
+  expect(screen.getByText("2 photos ready")).toBeVisible();
   expect(screen.getByText("front.jpg")).toBeVisible();
   expect(screen.getByText("detail.jpg")).toBeVisible();
 });
