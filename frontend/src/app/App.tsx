@@ -20,7 +20,7 @@ export function App({ environment }: { environment: Environment }) {
         </div>
         <strong
           aria-label="Active environment"
-          role="status"
+          aria-live="polite"
           className={`env-badge${environment === "production" ? " env-badge--production" : ""}`}
         >
           <span className="env-badge__dot" />
