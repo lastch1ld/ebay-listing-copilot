@@ -59,7 +59,7 @@ export function ItemIntakeForm({
       </header>
 
       <div className="intake-layout">
-        <section className="photo-workspace" aria-labelledby="photo-heading">
+        <section className="photo-workspace" aria-label="Photo upload workspace">
           <div className="field photo-field">
             <span className="section-number">01</span>
             <label id="photo-heading" htmlFor="photos">Add your photos</label>
