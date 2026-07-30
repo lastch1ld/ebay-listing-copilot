@@ -7,5 +7,5 @@ it("shows the active environment", () => {
   render(<App environment="sandbox" />);
   expect(screen.getByText("Sandbox")).toBeVisible();
   expect(screen.getByText("Seller workspace")).toBeVisible();
-  expect(screen.getByRole("status")).toHaveAccessibleName("Active environment");
+  expect(screen.getByLabelText("Active environment")).toHaveTextContent("Sandbox");
 });
