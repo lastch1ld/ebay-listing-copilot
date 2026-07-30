@@ -80,7 +80,7 @@ export function ItemIntakeForm({
             />
             {photos.length > 0 && (
               <>
-                <span className="selection-status" role="status">
+                <span className="selection-status" aria-live="polite">
                   {photos.length} photo{photos.length === 1 ? "" : "s"} ready
                 </span>
                 <ul className="photo-preview-grid" aria-label="Selected photos">
