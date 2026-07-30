@@ -50,3 +50,17 @@ it("submits once description, defects acknowledgement, price, and a photo are pr
     }),
   );
 });
+
+it("explains photo requirements and announces every selected file", () => {
+  render(<ItemIntakeForm onSubmit={vi.fn()} />);
+
+  expect(screen.getByText(/jpeg, png or webp/i)).toBeVisible();
+
+  fireEvent.change(screen.getByLabelText("Photos"), {
+    target: { files: [jpegFile("front.jpg"), jpegFile("detail.jpg")] },
+  });
+
+  expect(screen.getByRole("status")).toHaveTextContent("2 photos ready");
+  expect(screen.getByText("front.jpg")).toBeVisible();
+  expect(screen.getByText("detail.jpg")).toBeVisible();
+});
