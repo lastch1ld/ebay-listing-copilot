@@ -54,18 +54,19 @@ export function ItemIntakeForm({
     <form onSubmit={handleSubmit} aria-label="Item intake" className="card intake-card">
       <header className="page-heading">
         <span className="eyebrow">Create a listing</span>
-        <h1>Tell us what you’re selling.</h1>
+        <h1>What are we selling?</h1>
         <p>Start with honest details and clear photos. The copilot will turn them into a reviewable draft.</p>
       </header>
 
       <div className="intake-layout">
-        <section className="photo-workspace" aria-label="Photo upload workspace">
+        <div className="numbered-field photo-workspace" role="group" aria-label="1 Add your photos">
+          <span className="field-number" aria-hidden="true">1</span>
+          <div className="field-heading">
+            <label htmlFor="photos">Add your photos</label>
+            <span className="field-hint">— JPEG, PNG or WebP; bright, sharp images work best.</span>
+          </div>
           <div className="field photo-field">
-            <span className="section-number">01</span>
-            <label id="photo-heading" htmlFor="photos">Add your photos</label>
-            <p className="field-hint">JPEG, PNG or WebP · use bright, sharp images</p>
             <label className="photo-dropzone" htmlFor="photos">
-              <span className="photo-dropzone__icon" aria-hidden="true">+</span>
               <strong>Choose photos</strong>
               <span>or drop them here</span>
             </label>
@@ -94,58 +95,70 @@ export function ItemIntakeForm({
               </>
             )}
           </div>
-        </section>
+        </div>
 
-        <section className="details-workspace" aria-labelledby="details-heading">
-          <div className="section-heading">
-            <span className="section-number">02</span>
-            <div>
-              <h2 id="details-heading">Item details</h2>
-              <p className="field-hint">Specifics help research find better matches.</p>
+        <div className="details-workspace">
+          <div className="numbered-field" role="group" aria-label="2 Description">
+            <span className="field-number" aria-hidden="true">2</span>
+            <div className="field-heading">
+              <label htmlFor="description">Description</label>
+              <span className="field-hint">— Add the details a buyer would want to know.</span>
+            </div>
+            <div className="field">
+              <textarea
+                id="description"
+                placeholder="Brand, model, material, age, colour…"
+                value={description}
+                onChange={(event) => setDescription(event.target.value)}
+              />
             </div>
           </div>
-          <div className="field">
-            <label htmlFor="description">Description</label>
-            <textarea
-              id="description"
-              placeholder="Brand, model, material, age, colour…"
-              value={description}
-              onChange={(event) => setDescription(event.target.value)}
-            />
+
+          <div className="numbered-field" role="group" aria-label="3 Known defects">
+            <span className="field-number" aria-hidden="true">3</span>
+            <div className="field-heading">
+              <label htmlFor="defects">Known defects</label>
+              <span className="field-hint">— Be clear about wear, repairs, or missing parts.</span>
+            </div>
+            <div className="field">
+              <textarea
+                id="defects"
+                placeholder="Scratches, missing parts, wear or repairs…"
+                value={defectsText}
+                disabled={noKnownDefects}
+                onChange={(event) => setDefectsText(event.target.value)}
+              />
+            </div>
+            <div className="field field--checkbox">
+              <input
+                id="no-known-defects"
+                type="checkbox"
+                checked={noKnownDefects}
+                onChange={(event) => setNoKnownDefects(event.target.checked)}
+              />
+              <label htmlFor="no-known-defects">No known defects</label>
+            </div>
           </div>
 
-          <div className="field">
-            <label htmlFor="defects">Known defects</label>
-            <textarea
-              id="defects"
-              placeholder="Scratches, missing parts, wear or repairs…"
-              value={defectsText}
-              disabled={noKnownDefects}
-              onChange={(event) => setDefectsText(event.target.value)}
-            />
+          <div className="numbered-field" role="group" aria-label="4 Target price">
+            <span className="field-number" aria-hidden="true">4</span>
+            <div className="field-heading">
+              <label htmlFor="target-price">Target price</label>
+              <span className="field-hint">— Your preferred selling price in EUR.</span>
+            </div>
+            <div className="field">
+              <input
+                id="target-price"
+                aria-label="Target price (EUR)"
+                type="text"
+                inputMode="decimal"
+                value={targetPriceValue}
+                placeholder="0.00"
+                onChange={(event) => setTargetPriceValue(event.target.value)}
+              />
+            </div>
           </div>
-          <div className="field field--checkbox">
-            <input
-              id="no-known-defects"
-              type="checkbox"
-              checked={noKnownDefects}
-              onChange={(event) => setNoKnownDefects(event.target.checked)}
-            />
-            <label htmlFor="no-known-defects">No known defects</label>
-          </div>
-
-          <div className="field">
-            <label htmlFor="target-price">Target price (EUR)</label>
-            <input
-              id="target-price"
-              type="text"
-              inputMode="decimal"
-              value={targetPriceValue}
-              placeholder="0.00"
-              onChange={(event) => setTargetPriceValue(event.target.value)}
-            />
-          </div>
-        </section>
+        </div>
       </div>
 
       {error && (

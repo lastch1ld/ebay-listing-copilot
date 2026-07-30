@@ -7,6 +7,23 @@ function jpegFile(name = "lamp.jpg"): File {
   return new File(["fake-jpeg-bytes"], name, { type: "image/jpeg" });
 }
 
+it("uses a collaborative intake headline", () => {
+  render(<ItemIntakeForm onSubmit={vi.fn()} />);
+
+  expect(
+    screen.getByRole("heading", { level: 1, name: "What are we selling?" }),
+  ).toBeVisible();
+});
+
+it("presents every intake field with one sequential numbered hierarchy", () => {
+  render(<ItemIntakeForm onSubmit={vi.fn()} />);
+
+  expect(screen.getByRole("group", { name: "1 Add your photos" })).toBeVisible();
+  expect(screen.getByRole("group", { name: "2 Description" })).toBeVisible();
+  expect(screen.getByRole("group", { name: "3 Known defects" })).toBeVisible();
+  expect(screen.getByRole("group", { name: "4 Target price" })).toBeVisible();
+});
+
 it("blocks submission without a defects acknowledgement", () => {
   const onSubmit = vi.fn();
   render(<ItemIntakeForm onSubmit={onSubmit} />);

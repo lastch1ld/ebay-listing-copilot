@@ -40,13 +40,18 @@ export function TrackingList({
 
   return (
     <section aria-label="Tracking" className="stack">
-      <div className="card">
+      <div className="card tracking-card">
         <h1>Tracking</h1>
+        <p className="tracking-intro">Keep sold items and incoming parcels in one simple list.</p>
 
-        <form onSubmit={handleSubmit} aria-label="Add tracking number" style={{ marginTop: "var(--space-4)" }}>
-          <div className="two-column">
-            <div className="field">
-              <label htmlFor="tracking-direction">Direction</label>
+        <form onSubmit={handleSubmit} aria-label="Add tracking number" className="tracking-form">
+          <div className="tracking-fields">
+            <div className="numbered-field" role="group" aria-label="1 Direction">
+              <span className="field-number" aria-hidden="true">1</span>
+              <div className="field-heading">
+                <label htmlFor="tracking-direction">Direction</label>
+                <span className="field-hint">— Is it going out or coming to you?</span>
+              </div>
               <select
                 id="tracking-direction"
                 value={direction}
@@ -57,8 +62,12 @@ export function TrackingList({
               </select>
             </div>
 
-            <div className="field">
-              <label htmlFor="tracking-carrier">Carrier</label>
+            <div className="numbered-field" role="group" aria-label="2 Carrier">
+              <span className="field-number" aria-hidden="true">2</span>
+              <div className="field-heading">
+                <label htmlFor="tracking-carrier">Carrier</label>
+                <span className="field-hint">— The delivery company.</span>
+              </div>
               <input
                 id="tracking-carrier"
                 value={carrier}
@@ -66,8 +75,12 @@ export function TrackingList({
               />
             </div>
 
-            <div className="field">
-              <label htmlFor="tracking-number">Tracking number</label>
+            <div className="numbered-field" role="group" aria-label="3 Tracking number">
+              <span className="field-number" aria-hidden="true">3</span>
+              <div className="field-heading">
+                <label htmlFor="tracking-number">Tracking number</label>
+                <span className="field-hint">— Copy it exactly as provided.</span>
+              </div>
               <input
                 id="tracking-number"
                 value={trackingNumber}
@@ -75,8 +88,12 @@ export function TrackingList({
               />
             </div>
 
-            <div className="field">
-              <label htmlFor="tracking-label">Label</label>
+            <div className="numbered-field" role="group" aria-label="4 Label">
+              <span className="field-number" aria-hidden="true">4</span>
+              <div className="field-heading">
+                <label htmlFor="tracking-label">Label</label>
+                <span className="field-hint">— A name you will recognise later.</span>
+              </div>
               <input
                 id="tracking-label"
                 value={label}
@@ -85,8 +102,12 @@ export function TrackingList({
             </div>
 
             {direction === "OUTBOUND" && (
-              <div className="field">
+              <div className="numbered-field" role="group" aria-label="5 Linked item">
+                <span className="field-number" aria-hidden="true">5</span>
+                <div className="field-heading">
                 <label htmlFor="tracking-item-id">Linked item (optional)</label>
+                  <span className="field-hint">— Connect this parcel to a listing.</span>
+                </div>
                 <input
                   id="tracking-item-id"
                   value={itemId}
