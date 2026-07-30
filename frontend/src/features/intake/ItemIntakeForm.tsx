@@ -51,36 +51,64 @@ export function ItemIntakeForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} aria-label="Item intake" className="card">
-      <h1>New item</h1>
-      <p className="section-label" style={{ marginTop: "var(--space-2)" }}>
-        Photos, description, defects, and target price
-      </p>
+    <form onSubmit={handleSubmit} aria-label="Item intake" className="card intake-card">
+      <header className="page-heading">
+        <span className="eyebrow">Create a listing</span>
+        <h1>Tell us what you’re selling.</h1>
+        <p>Start with honest details and clear photos. The copilot will turn them into a reviewable draft.</p>
+      </header>
 
-      <div className="two-column" style={{ marginTop: "var(--space-5)" }}>
-        <div className="stack">
-          <div className="field">
-            <label htmlFor="photos">Photos</label>
+      <div className="intake-layout">
+        <section className="photo-workspace" aria-labelledby="photo-heading">
+          <div className="field photo-field">
+            <span className="section-number">01</span>
+            <label id="photo-heading" htmlFor="photos">Add your photos</label>
+            <p className="field-hint">JPEG, PNG or WebP · use bright, sharp images</p>
+            <label className="photo-dropzone" htmlFor="photos">
+              <span className="photo-dropzone__icon" aria-hidden="true">+</span>
+              <strong>Choose photos</strong>
+              <span>or drop them here</span>
+            </label>
             <input
+              className="visually-hidden"
               id="photos"
+              aria-label="Photos"
               type="file"
               accept="image/jpeg,image/png,image/webp"
               multiple
               onChange={(event) => setPhotos(Array.from(event.target.files ?? []))}
             />
             {photos.length > 0 && (
-              <span className="badge">
-                {photos.length} photo{photos.length === 1 ? "" : "s"} selected
-              </span>
+              <>
+                <span className="selection-status" role="status">
+                  {photos.length} photo{photos.length === 1 ? "" : "s"} ready
+                </span>
+                <ul className="photo-preview-grid" aria-label="Selected photos">
+                  {photos.map((photo, index) => (
+                    <li key={`${photo.name}-${photo.lastModified}`}>
+                      <span aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
+                      <strong>{photo.name}</strong>
+                    </li>
+                  ))}
+                </ul>
+              </>
             )}
           </div>
-        </div>
+        </section>
 
-        <div className="stack">
+        <section className="details-workspace" aria-labelledby="details-heading">
+          <div className="section-heading">
+            <span className="section-number">02</span>
+            <div>
+              <h2 id="details-heading">Item details</h2>
+              <p className="field-hint">Specifics help research find better matches.</p>
+            </div>
+          </div>
           <div className="field">
             <label htmlFor="description">Description</label>
             <textarea
               id="description"
+              placeholder="Brand, model, material, age, colour…"
               value={description}
               onChange={(event) => setDescription(event.target.value)}
             />
@@ -90,6 +118,7 @@ export function ItemIntakeForm({
             <label htmlFor="defects">Known defects</label>
             <textarea
               id="defects"
+              placeholder="Scratches, missing parts, wear or repairs…"
               value={defectsText}
               disabled={noKnownDefects}
               onChange={(event) => setDefectsText(event.target.value)}
@@ -112,10 +141,11 @@ export function ItemIntakeForm({
               type="text"
               inputMode="decimal"
               value={targetPriceValue}
+              placeholder="0.00"
               onChange={(event) => setTargetPriceValue(event.target.value)}
             />
           </div>
-        </div>
+        </section>
       </div>
 
       {error && (
@@ -124,9 +154,12 @@ export function ItemIntakeForm({
         </p>
       )}
 
-      <button type="submit" className="button button--primary" style={{ marginTop: "var(--space-5)" }}>
-        Continue
-      </button>
+      <footer className="form-actions">
+        <span>Your draft stays private until you explicitly approve it.</span>
+        <button type="submit" className="button button--primary">
+          Continue <span aria-hidden="true">→</span>
+        </button>
+      </footer>
     </form>
   );
 }
