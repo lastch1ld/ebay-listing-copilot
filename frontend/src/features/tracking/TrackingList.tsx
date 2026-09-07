@@ -46,7 +46,7 @@ export function TrackingList({
 
         <form onSubmit={handleSubmit} aria-label="Add tracking number" className="tracking-form">
           <div className="tracking-fields">
-            <div className="numbered-field" role="group" aria-label="1 Direction">
+            <div className="numbered-field" role="group" aria-label="Step 1">
               <span className="field-number" aria-hidden="true">1</span>
               <div className="field-heading">
                 <label htmlFor="tracking-direction">Direction</label>
@@ -62,7 +62,7 @@ export function TrackingList({
               </select>
             </div>
 
-            <div className="numbered-field" role="group" aria-label="2 Carrier">
+            <div className="numbered-field" role="group" aria-label="Step 2">
               <span className="field-number" aria-hidden="true">2</span>
               <div className="field-heading">
                 <label htmlFor="tracking-carrier">Carrier</label>
@@ -75,7 +75,7 @@ export function TrackingList({
               />
             </div>
 
-            <div className="numbered-field" role="group" aria-label="3 Tracking number">
+            <div className="numbered-field" role="group" aria-label="Step 3">
               <span className="field-number" aria-hidden="true">3</span>
               <div className="field-heading">
                 <label htmlFor="tracking-number">Tracking number</label>
@@ -88,7 +88,7 @@ export function TrackingList({
               />
             </div>
 
-            <div className="numbered-field" role="group" aria-label="4 Label">
+            <div className="numbered-field" role="group" aria-label="Step 4">
               <span className="field-number" aria-hidden="true">4</span>
               <div className="field-heading">
                 <label htmlFor="tracking-label">Label</label>
@@ -102,7 +102,7 @@ export function TrackingList({
             </div>
 
             {direction === "OUTBOUND" && (
-              <div className="numbered-field" role="group" aria-label="5 Linked item">
+              <div className="numbered-field" role="group" aria-label="Step 5">
                 <span className="field-number" aria-hidden="true">5</span>
                 <div className="field-heading">
                 <label htmlFor="tracking-item-id">Linked item (optional)</label>

@@ -59,7 +59,7 @@ export function ItemIntakeForm({
       </header>
 
       <div className="intake-layout">
-        <div className="numbered-field photo-workspace" role="group" aria-label="1 Add your photos">
+        <div className="numbered-field photo-workspace" role="group" aria-label="Step 1">
           <span className="field-number" aria-hidden="true">1</span>
           <div className="field-heading">
             <label htmlFor="photos">Add your photos</label>
@@ -98,7 +98,7 @@ export function ItemIntakeForm({
         </div>
 
         <div className="details-workspace">
-          <div className="numbered-field" role="group" aria-label="2 Description">
+          <div className="numbered-field" role="group" aria-label="Step 2">
             <span className="field-number" aria-hidden="true">2</span>
             <div className="field-heading">
               <label htmlFor="description">Description</label>
@@ -114,7 +114,7 @@ export function ItemIntakeForm({
             </div>
           </div>
 
-          <div className="numbered-field" role="group" aria-label="3 Known defects">
+          <div className="numbered-field" role="group" aria-label="Step 3">
             <span className="field-number" aria-hidden="true">3</span>
             <div className="field-heading">
               <label htmlFor="defects">Known defects</label>
@@ -140,7 +140,7 @@ export function ItemIntakeForm({
             </div>
           </div>
 
-          <div className="numbered-field" role="group" aria-label="4 Target price">
+          <div className="numbered-field" role="group" aria-label="Step 4">
             <span className="field-number" aria-hidden="true">4</span>
             <div className="field-heading">
               <label htmlFor="target-price">Target price</label>
