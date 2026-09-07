@@ -18,10 +18,13 @@ it("uses a collaborative intake headline", () => {
 it("presents every intake field with one sequential numbered hierarchy", () => {
   render(<ItemIntakeForm onSubmit={vi.fn()} />);
 
-  expect(screen.getByRole("group", { name: "1 Add your photos" })).toBeVisible();
-  expect(screen.getByRole("group", { name: "2 Description" })).toBeVisible();
-  expect(screen.getByRole("group", { name: "3 Known defects" })).toBeVisible();
-  expect(screen.getByRole("group", { name: "4 Target price" })).toBeVisible();
+  expect(screen.getByRole("group", { name: "Step 1" })).toBeVisible();
+  expect(screen.getByRole("group", { name: "Step 2" })).toBeVisible();
+  expect(screen.getByRole("group", { name: "Step 3" })).toBeVisible();
+  expect(screen.getByRole("group", { name: "Step 4" })).toBeVisible();
+  // Each field keeps exactly one accessible name — the step wrapper must not
+  // duplicate it (see TrackingList.test.tsx for what that breaks).
+  expect(screen.getAllByLabelText(/Description/)).toHaveLength(1);
 });
 
 it("blocks submission without a defects acknowledgement", () => {
