@@ -428,10 +428,7 @@ textarea {
 }
 
 body {
-  background:
-    radial-gradient(circle at 5% 0%, rgba(245, 197, 24, 0.12), transparent 24rem),
-    radial-gradient(circle at 100% 20%, rgba(54, 101, 243, 0.08), transparent 30rem),
-    var(--color-bg);
+  background: var(--color-bg);
 }
 
 button,
@@ -452,73 +449,20 @@ textarea {
   justify-content: space-between;
   min-height: 72px;
   padding: 0 max(var(--space-6), calc((100vw - 1180px) / 2));
-  background: color-mix(in srgb, var(--color-surface) 88%, transparent);
-  border-bottom-color: color-mix(in srgb, var(--color-border) 72%, transparent);
-  backdrop-filter: blur(18px);
+  background: var(--color-surface);
+  border-bottom-color: var(--color-border);
 }
 
-.brand-lockup,
-.brand-lockup > span:last-child {
+.brand-lockup {
   display: flex;
   align-items: center;
 }
 
-.brand-lockup {
-  gap: 0.75rem;
-}
-
-.brand-lockup > span:last-child {
-  align-items: flex-start;
-  flex-direction: column;
-  line-height: 1.1;
-}
-
-.brand-mark {
-  display: grid;
-  grid-template-columns: repeat(4, 7px);
-  gap: 2px;
-  align-items: end;
-  width: 34px;
-  height: 34px;
-  padding: 7px 5px;
-  border: 1px solid var(--color-text);
-  border-radius: 11px;
-  background: var(--color-text);
-}
-
-.brand-mark i {
-  display: block;
-  height: 9px;
-  border-radius: 999px;
-  background: #e53238;
-}
-
-.brand-mark i:nth-child(2) {
-  height: 15px;
-  background: #3665f3;
-}
-
-.brand-mark i:nth-child(3) {
-  height: 12px;
-  background: #f5af02;
-}
-
-.brand-mark i:nth-child(4) {
-  height: 18px;
-  background: #86b817;
-}
-
 .app-topbar__brand {
-  font-size: 0.96rem;
-  letter-spacing: -0.025em;
-}
-
-.app-topbar__descriptor {
-  color: var(--color-text-muted);
-  font-size: 0.7rem;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.1rem;
   font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  letter-spacing: -0.02em;
 }
 
 .env-badge {
@@ -550,8 +494,7 @@ textarea {
   gap: 0.4rem;
   overflow-x: auto;
   padding: 0 max(var(--space-6), calc((100vw - 1180px) / 2));
-  background: color-mix(in srgb, var(--color-surface) 84%, transparent);
-  backdrop-filter: blur(18px);
+  background: var(--color-surface);
   scrollbar-width: none;
 }
 
@@ -580,59 +523,122 @@ textarea {
 }
 
 .card {
-  box-shadow: 0 1px 0 rgba(23, 23, 19, 0.02), 0 24px 70px rgba(40, 36, 28, 0.06);
+  box-shadow: none;
 }
 
 .intake-card {
-  padding: clamp(1.25rem, 4vw, 3.25rem);
+  padding: clamp(1.25rem, 3vw, 2.5rem);
 }
 
 .page-heading {
-  max-width: 720px;
+  max-width: 640px;
 }
 
-.eyebrow,
-.section-number {
-  color: var(--color-accent);
-  font-size: 0.7rem;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+.eyebrow {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  font-weight: 600;
 }
 
 .page-heading h1 {
-  max-width: 680px;
-  margin-top: 0.45rem;
-  font-size: clamp(2rem, 5vw, 4.5rem);
-  font-weight: 650;
-  letter-spacing: -0.065em;
-  line-height: 0.98;
+  margin-top: 0.35rem;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2rem, 4vw, 3.35rem);
+  font-weight: 500;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
 }
 
 .page-heading p {
-  max-width: 620px;
-  margin-top: 1.1rem;
+  max-width: 560px;
+  margin-top: 0.75rem;
   color: var(--color-text-secondary);
-  font-size: var(--text-md);
+  font-size: 1rem;
 }
 
 .intake-layout {
   display: grid;
-  grid-template-columns: minmax(280px, 0.85fr) minmax(340px, 1.15fr);
-  gap: clamp(1.5rem, 5vw, 4.5rem);
-  margin-top: clamp(2rem, 5vw, 4.5rem);
+  grid-template-columns: minmax(280px, 0.9fr) minmax(360px, 1.1fr);
+  gap: clamp(2rem, 4vw, 3.5rem);
+  margin-top: clamp(2rem, 4vw, 3rem);
 }
 
 .photo-workspace {
   min-width: 0;
 }
 
-.photo-field > label:first-of-type,
-.section-heading h2 {
-  margin-top: 0.35rem;
+.details-workspace {
+  display: grid;
+  gap: 1.65rem;
+}
+
+.tracking-card {
+  padding: clamp(1.25rem, 3vw, 2.5rem);
+}
+
+.tracking-card h1 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+}
+
+.tracking-intro {
+  max-width: 520px;
+  margin-top: 0.45rem;
+  color: var(--color-text-secondary);
+}
+
+.tracking-form {
+  margin-top: 2rem;
+}
+
+.tracking-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.65rem 2.25rem;
+  margin-bottom: 1.75rem;
+}
+
+.tracking-fields .numbered-field:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+  max-width: calc(50% - 1.125rem);
+}
+
+.numbered-field {
+  min-width: 0;
+}
+
+.numbered-field > input,
+.numbered-field > select,
+.numbered-field > textarea {
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 0.9rem;
+  background: var(--color-surface);
+}
+
+.field-number {
+  display: block;
+  margin-bottom: 0.3rem;
+  color: var(--color-text-muted);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.field-heading {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 0.65rem;
+}
+
+.field-heading label {
   color: var(--color-text);
-  font-size: var(--text-lg);
-  font-weight: 700;
+  font-weight: 650;
 }
 
 .field-hint {
@@ -647,34 +653,17 @@ textarea {
   justify-content: center;
   flex-direction: column;
   gap: 0.3rem;
-  margin-top: 0.75rem;
   border: 1px dashed var(--color-border-strong);
-  border-radius: 16px;
-  background:
-    linear-gradient(var(--color-surface), var(--color-surface)) padding-box,
-    repeating-linear-gradient(135deg, transparent 0 12px, rgba(37, 99, 235, 0.025) 12px 24px);
+  border-radius: 10px;
+  background: var(--color-surface);
   color: var(--color-text-secondary);
   cursor: pointer;
-  transition: border-color 180ms ease, background-color 180ms ease, transform 180ms ease;
+  transition: border-color 180ms ease, background-color 180ms ease;
 }
 
 .photo-dropzone:hover {
   border-color: var(--color-accent);
   background-color: var(--color-accent-tint);
-  transform: translateY(-2px);
-}
-
-.photo-dropzone__icon {
-  display: grid;
-  width: 46px;
-  height: 46px;
-  place-items: center;
-  margin-bottom: 0.5rem;
-  border-radius: 50%;
-  background: var(--color-text);
-  color: white;
-  font-size: 1.6rem;
-  font-weight: 300;
 }
 
 .photo-dropzone strong {
@@ -720,21 +709,9 @@ textarea {
   font-weight: 700;
 }
 
-.section-heading {
-  display: flex;
-  align-items: flex-start;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.section-heading h2 {
-  margin: 0;
-}
-
 .field {
   gap: 0.45rem;
+  margin-bottom: 0;
 }
 
 .field input[type="text"],
@@ -764,7 +741,7 @@ textarea {
 }
 
 .field textarea {
-  min-height: 7rem;
+  min-height: 6.25rem;
 }
 
 .field--checkbox {
@@ -797,18 +774,14 @@ textarea {
 
 .button {
   justify-content: center;
-  border-radius: 10px;
-  transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease;
-}
-
-.button:hover:not(:disabled) {
-  transform: translateY(-1px);
+  border-radius: 8px;
+  transition: background-color 160ms ease, border-color 160ms ease;
 }
 
 .button--primary {
   border-color: var(--color-text);
   background: var(--color-text);
-  box-shadow: 0 8px 22px rgba(23, 23, 19, 0.15);
+  box-shadow: none;
 }
 
 .button--primary:hover:not(:disabled) {
@@ -855,6 +828,15 @@ textarea {
     grid-template-columns: 1fr;
   }
 
+  .tracking-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .tracking-fields .numbered-field:last-child:nth-child(odd) {
+    grid-column: auto;
+    max-width: none;
+  }
+
   .photo-dropzone {
     min-height: 190px;
   }
@@ -870,13 +852,20 @@ textarea {
 }
 
 @media (max-width: 440px) {
-  .app-topbar__descriptor {
-    display: none;
+  .app-nav {
+    justify-content: space-between;
+    gap: 0;
+    padding-inline: 0.25rem;
   }
 
-  .brand-mark {
-    width: 32px;
-    height: 32px;
+  .app-nav__tab {
+    padding-inline: 0.45rem;
+    font-size: 0.75rem;
+  }
+
+  .app-nav__tab[aria-current="page"]::after {
+    right: 0.45rem;
+    left: 0.45rem;
   }
 
   .env-badge {

@@ -4,8 +4,11 @@ import { it, expect } from "vitest";
 import { App } from "./App";
 
 it("shows the active environment", () => {
-  render(<App environment="sandbox" />);
+  const { container } = render(<App environment="sandbox" />);
+
+  expect(screen.getByText("Listing Copilot")).toBeVisible();
   expect(screen.getByText("Sandbox")).toBeVisible();
-  expect(screen.getByText("Seller workspace")).toBeVisible();
+  expect(screen.queryByText("Seller workspace")).not.toBeInTheDocument();
+  expect(container.querySelector(".brand-mark")).not.toBeInTheDocument();
   expect(screen.getByLabelText("Active environment")).toHaveTextContent("Sandbox");
 });

@@ -7,16 +7,7 @@ export function App({ environment }: { environment: Environment }) {
     <div className="app-shell">
       <header className="app-topbar">
         <div className="brand-lockup">
-          <span className="brand-mark" aria-hidden="true">
-            <i />
-            <i />
-            <i />
-            <i />
-          </span>
-          <span>
-            <strong className="app-topbar__brand">Listing Copilot</strong>
-            <span className="app-topbar__descriptor">Seller workspace</span>
-          </span>
+          <strong className="app-topbar__brand">Listing Copilot</strong>
         </div>
         <strong
           aria-label="Active environment"

@@ -7,6 +7,26 @@ function jpegFile(name = "lamp.jpg"): File {
   return new File(["fake-jpeg-bytes"], name, { type: "image/jpeg" });
 }
 
+it("uses a collaborative intake headline", () => {
+  render(<ItemIntakeForm onSubmit={vi.fn()} />);
+
+  expect(
+    screen.getByRole("heading", { level: 1, name: "What are we selling?" }),
+  ).toBeVisible();
+});
+
+it("presents every intake field with one sequential numbered hierarchy", () => {
+  render(<ItemIntakeForm onSubmit={vi.fn()} />);
+
+  expect(screen.getByRole("group", { name: "Step 1" })).toBeVisible();
+  expect(screen.getByRole("group", { name: "Step 2" })).toBeVisible();
+  expect(screen.getByRole("group", { name: "Step 3" })).toBeVisible();
+  expect(screen.getByRole("group", { name: "Step 4" })).toBeVisible();
+  // Each field keeps exactly one accessible name — the step wrapper must not
+  // duplicate it (see TrackingList.test.tsx for what that breaks).
+  expect(screen.getAllByLabelText(/Description/)).toHaveLength(1);
+});
+
 it("blocks submission without a defects acknowledgement", () => {
   const onSubmit = vi.fn();
   render(<ItemIntakeForm onSubmit={onSubmit} />);
